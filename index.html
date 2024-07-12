@@ -1,5 +1,5 @@
 
-<html><head><base href="https://visio.ai/"><title>Visio AI - Secure P2P Video Conferencing</title>
+<html><head><base href="https://visio.ai/"><title>Visio AI - WebRTC Video Conferencing</title>
 <style>
   body, html {
     margin: 0;
@@ -85,15 +85,15 @@
   .participant-name {
     font-weight: bold;
   }
-  #joinForm {
+  #joinForm, #createForm {
     margin-bottom: 20px;
   }
-  #joinForm input, #joinForm button {
+  #joinForm input, #joinForm button, #createForm input, #createForm button {
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
   }
-  #joinForm button {
+  #joinForm button, #createForm button {
     background-color: #464775;
     color: white;
     border: none;
@@ -114,43 +114,56 @@
     padding: 5px 10px;
     border-radius: 5px;
   }
+  #roomInfo {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #e6e6e6;
+    border-radius: 5px;
+    display: none;
+  }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="sidebar">
-    <h2>Participants</h2>
-    <div id="joinForm">
-      <input type="text" id="nameInput" placeholder="Enter your name">
-      <input type="text" id="roomInput" placeholder="Enter room ID">
-      <button onclick="joinMeeting()">Join Meeting</button>
+    <h2>Visio AI Conference</h2>
+    <div id="createForm">
+      <input type="text" id="createNameInput" placeholder="Enter your name">
+      <button onclick="createRoom()">Create New Room</button>
     </div>
+    <div id="joinForm">
+      <input type="text" id="joinNameInput" placeholder="Enter your name">
+      <input type="text" id="roomInput" placeholder="Enter room ID">
+      <button onclick="joinRoom()">Join Room</button>
+    </div>
+    <div id="roomInfo"></div>
+    <h3>Participants</h3>
     <div id="participantsList"></div>
   </div>
   <div class="main-content">
     <div id="videoGrid" class="video-grid">
       <div class="waiting-message">
         <h3>Welcome to Visio AI</h3>
-        <p>Enter your name and room ID, then click "Join Meeting" to start.</p>
-        <p>Share the room ID with others to let them join the same meeting.</p>
+        <p>Create a new room or join an existing one to start.</p>
       </div>
     </div>
     <div class="controls">
       <button class="control-btn" id="muteBtn">Mute</button>
       <button class="control-btn" id="videoBtn">Stop Video</button>
       <button class="control-btn" id="shareBtn">Share Screen</button>
-      <button class="control-btn" id="leaveBtn">Leave Meeting</button>
+      <button class="control-btn" id="leaveBtn">Leave Room</button>
     </div>
   </div>
 </div>
 
-<script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
 <script>
-  const participants = [];
+  const participants = new Map();
   const videoGrid = document.getElementById('videoGrid');
   const participantsList = document.getElementById('participantsList');
-  const nameInput = document.getElementById('nameInput');
+  const createNameInput = document.getElementById('createNameInput');
+  const joinNameInput = document.getElementById('joinNameInput');
   const roomInput = document.getElementById('roomInput');
+  const roomInfo = document.getElementById('roomInfo');
   const muteBtn = document.getElementById('muteBtn');
   const videoBtn = document.getElementById('videoBtn');
   const shareBtn = document.getElementById('shareBtn');
@@ -161,104 +174,169 @@
   let isAudioMuted = false;
   let isVideoStopped = false;
   let isScreenSharing = false;
-  let myPeer;
-  let currentRoom;
+  let roomId;
+  let localPeerConnection;
+  let localUuid;
 
-  async function joinMeeting() {
-    const name = nameInput.value.trim();
-    const roomId = roomInput.value.trim();
+  const configuration = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+    ]
+  };
+
+  async function createRoom() {
+    const name = createNameInput.value.trim();
+    if (!name) {
+      alert('Please enter your name');
+      return;
+    }
+    roomId = generateRoomId();
+    await initializeLocalStream(name);
+    initializeWebSocket(roomId, name);
+    updateRoomInfo();
+  }
+
+  async function joinRoom() {
+    const name = joinNameInput.value.trim();
+    roomId = roomInput.value.trim();
     if (!name || !roomId) {
       alert('Please enter your name and room ID');
       return;
     }
+    await initializeLocalStream(name);
+    initializeWebSocket(roomId, name);
+    updateRoomInfo();
+  }
 
+  function generateRoomId() {
+    return Math.random().toString(36).substring(2, 15);
+  }
+
+  async function initializeLocalStream(name) {
     try {
       localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      setupLocalVideo(name, localStream);
-      
-      myPeer = new Peer();
-      myPeer.on('open', (id) => {
-        currentRoom = roomId;
-        addParticipant(name, localStream, id);
-        joinRoom(roomId, name, id);
-      });
-
-      myPeer.on('call', (call) => {
-        call.answer(localStream);
-        call.on('stream', (userVideoStream) => {
-          addVideoElement(call.metadata.name, userVideoStream, call.peer);
-        });
-      });
-
-      nameInput.value = '';
-      roomInput.value = '';
-      document.querySelector('.waiting-message').style.display = 'none';
+      localUuid = generateUuid();
+      setupLocalVideo(name);
     } catch (error) {
       console.error('Error accessing media devices:', error);
       alert('Failed to access camera and microphone. Please ensure you have given the necessary permissions.');
     }
   }
 
-  function joinRoom(roomId, name, userId) {
+  function initializeWebSocket(roomId, name) {
     const socket = new WebSocket(`wss://visio.ai/room/${roomId}`);
-    
+
     socket.onopen = () => {
-      console.log('Connected to room');
-      socket.send(JSON.stringify({ type: 'join', name, userId }));
+      console.log('Connected to WebSocket server');
+      socket.send(JSON.stringify({ type: 'join', name, uuid: localUuid }));
     };
 
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'user-connected') {
-        connectToNewUser(data.userId, data.name);
-      } else if (data.type === 'user-disconnected') {
-        removeParticipant(data.userId);
+    socket.onmessage = async (event) => {
+      const message = JSON.parse(event.data);
+      switch (message.type) {
+        case 'user-joined':
+          if (message.uuid !== localUuid) {
+            await createPeerConnection(message.uuid, message.name);
+          }
+          break;
+        case 'user-left':
+          removePeerConnection(message.uuid);
+          break;
+        case 'signal':
+          handleSignalingData(message.uuid, message.data);
+          break;
       }
     };
+
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    socket.onclose = () => {
+      console.log('Disconnected from WebSocket server');
+    };
   }
 
-  function connectToNewUser(userId, name) {
-    const call = myPeer.call(userId, localStream, { metadata: { name: nameInput.value } });
-    call.on('stream', (userVideoStream) => {
-      addVideoElement(name, userVideoStream, userId);
-    });
-  }
+  async function createPeerConnection(remoteUuid, remoteName) {
+    const peerConnection = new RTCPeerConnection(configuration);
+    participants.set(remoteUuid, { peerConnection, name: remoteName });
 
-  function addParticipant(name, stream, id) {
-    const participant = { name, stream, id };
-    participants.push(participant);
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        sendSignalingData(remoteUuid, { type: 'ice-candidate', candidate: event.candidate });
+      }
+    };
+
+    peerConnection.ontrack = (event) => {
+      addVideoElement(remoteName, event.streams[0], remoteUuid);
+    };
+
+    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+    try {
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      sendSignalingData(remoteUuid, { type: 'offer', sdp: offer.sdp });
+    } catch (error) {
+      console.error('Error creating offer:', error);
+    }
+
     updateParticipantsList();
   }
 
-  function removeParticipant(userId) {
-    const index = participants.findIndex(p => p.id === userId);
-    if (index !== -1) {
-      participants.splice(index, 1);
+  function removePeerConnection(remoteUuid) {
+    const participant = participants.get(remoteUuid);
+    if (participant) {
+      participant.peerConnection.close();
+      participants.delete(remoteUuid);
+      removeVideoElement(remoteUuid);
       updateParticipantsList();
-      const videoElement = document.getElementById(`video-${userId}`);
-      if (videoElement) {
-        videoElement.remove();
-      }
     }
   }
 
-  function updateParticipantsList() {
-    participantsList.innerHTML = '';
-    participants.forEach(participant => {
-      const participantDiv = document.createElement('div');
-      participantDiv.className = 'participant';
-      participantDiv.innerHTML = `
-        <div class="participant-avatar">${participant.name[0].toUpperCase()}</div>
-        <span class="participant-name">${participant.name}</span>
-      `;
-      participantsList.appendChild(participantDiv);
-    });
+  async function handleSignalingData(remoteUuid, data) {
+    const participant = participants.get(remoteUuid);
+    if (!participant) return;
+
+    const { peerConnection } = participant;
+
+    switch (data.type) {
+      case 'offer':
+        await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: data.sdp }));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        sendSignalingData(remoteUuid, { type: 'answer', sdp: answer.sdp });
+        break;
+      case 'answer':
+        await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: data.sdp }));
+        break;
+      case 'ice-candidate':
+        await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+        break;
+    }
   }
 
-  function addVideoElement(name, stream, userId) {
+  function sendSignalingData(remoteUuid, data) {
+    const socket = new WebSocket(`wss://visio.ai/room/${roomId}`);
+    socket.onopen = () => {
+      socket.send(JSON.stringify({ type: 'signal', uuid: localUuid, remoteUuid, data }));
+      socket.close();
+    };
+  }
+
+  function setupLocalVideo(name) {
+    addVideoElement(name, localStream, 'local');
+    const localVideo = document.getElementById('video-local');
+    if (localVideo) {
+      localVideo.querySelector('video').muted = true;
+    }
+  }
+
+  function addVideoElement(name, stream, uuid) {
     const videoContainer = document.createElement('div');
     videoContainer.className = 'video-container';
-    videoContainer.id = `video-${userId}`;
+    videoContainer.id = `video-${uuid}`;
     const video = document.createElement('video');
     video.srcObject = stream;
     video.autoplay = true;
@@ -271,12 +349,32 @@
     videoGrid.appendChild(videoContainer);
   }
 
-  function setupLocalVideo(name, stream) {
-    addVideoElement(name, stream, 'local');
-    const localVideo = document.getElementById('video-local');
-    if (localVideo) {
-      localVideo.querySelector('video').muted = true;
+  function removeVideoElement(uuid) {
+    const videoElement = document.getElementById(`video-${uuid}`);
+    if (videoElement) {
+      videoElement.remove();
     }
+  }
+
+  function updateParticipantsList() {
+    participantsList.innerHTML = '';
+    participants.forEach((participant, uuid) => {
+      const participantDiv = document.createElement('div');
+      participantDiv.className = 'participant';
+      participantDiv.innerHTML = `
+        <div class="participant-avatar">${participant.name[0].toUpperCase()}</div>
+        <span class="participant-name">${participant.name}</span>
+      `;
+      participantsList.appendChild(participantDiv);
+    });
+  }
+
+  function updateRoomInfo() {
+    roomInfo.style.display = 'block';
+    roomInfo.innerHTML = `
+      <strong>Room ID:</strong> ${roomId}<br>
+      <strong>Your Name:</strong> ${createNameInput.value || joinNameInput.value}
+    `;
   }
 
   muteBtn.addEventListener('click', () => {
@@ -310,9 +408,7 @@
   });
 
   function replaceVideoTrack(newTrack) {
-    const videoSender = myPeer.connections.values().next().value[0].peerConnection
-      .getSenders()
-      .find(sender => sender.track.kind === 'video');
+    const videoSender = localPeerConnection.getSenders().find(sender => sender.track.kind === 'video');
     videoSender.replaceTrack(newTrack);
     document.getElementById('video-local').querySelector('video').srcObject = new MediaStream([newTrack]);
   }
@@ -334,14 +430,22 @@
     if (screenStream) {
       screenStream.getTracks().forEach(track => track.stop());
     }
-    if (myPeer) {
-      myPeer.destroy();
-    }
+    participants.forEach((participant) => {
+      participant.peerConnection.close();
+    });
+    participants.clear();
     videoGrid.innerHTML = '';
     participantsList.innerHTML = '';
-    participants.length = 0;
-    alert('You have left the meeting');
+    roomInfo.style.display = 'none';
     document.querySelector('.waiting-message').style.display = 'block';
+    alert('You have left the room');
   });
+
+  function generateUuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
 </script>
 </body></html>
