@@ -1,312 +1,255 @@
 
-<html><head><base href="https://livecaster.sim"></base><title>LiveCaster - Professional Streaming Platform</title><style>
-body {
-  font-family: 'Roboto', sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #1a1a1a;
-  color: #fff;
-}
-header {
-  background-color: #2c3e50;
-  padding: 1rem;
-  text-align: center;
-}
-main {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-.stream-container {
-  background-color: #2c2c2c;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-#videoPlayer {
-  width: 100%;
-  height: auto;
-  background-color: #000;
-  border-radius: 4px;
-}
-button {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  border-radius: 4px;
-  margin-right: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-button:hover {
-  background-color: #2980b9;
-}
-.stream-controls {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 1rem;
-}
-.stream-info {
-  margin-top: 1rem;
-}
-.chat-container {
-  background-color: #2c2c2c;
-  border-radius: 8px;
-  padding: 1rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-#chat-messages {
-  height: 300px;
-  overflow-y: auto;
-  border: 1px solid #444;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
-  background-color: #1a1a1a;
-}
-#chat-input {
-  width: calc(100% - 70px);
-  padding: 0.5rem;
-  background-color: #333;
-  border: 1px solid #444;
-  color: #fff;
-}
-#send-message {
-  width: 60px;
-}
-.settings-panel {
-  background-color: #2c2c2c;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-top: 2rem;
-}
-.settings-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-}
-.setting-item {
-  background-color: #333;
-  padding: 1rem;
-  border-radius: 4px;
-}
-select, input[type="range"] {
-  width: 100%;
-  margin-top: 0.5rem;
-  background-color: #444;
-  color: #fff;
-  border: none;
-  padding: 0.3rem;
-}
-</style></head><body>
+<html><head><base href="https://visio.ai/%20create%20fonctional%20page%20Multi-User%20Broadcasting"><title>Visio - Multi-User Broadcasting</title>
+<style>
+  body {
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f9;
+    color: #333;
+  }
+  header {
+    background-color: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 1rem 0;
+  }
+  nav {
+    background-color: #34495e;
+    padding: 0.5rem 0;
+  }
+  nav ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+  }
+  nav ul li {
+    margin: 0 1rem;
+  }
+  nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  .broadcast-container {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  .video-container {
+    background-color: #000;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  video {
+    width: 100%;
+    height: auto;
+  }
+  .chat-container {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1rem;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+  }
+  .chat-input {
+    display: flex;
+  }
+  .chat-input input {
+    flex-grow: 1;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px 0 0 4px;
+  }
+  .chat-input button {
+    padding: 0.5rem 1rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+  }
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .control-btn {
+    padding: 0.5rem 1rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .control-btn:hover {
+    background-color: #2980b9;
+  }
+</style>
+</head>
+<body>
 <header>
-  <h1>LiveCaster Pro</h1>
-  <p>Your Professional Streaming Platform</p>
+  <h1>Visio - Multi-User Broadcasting</h1>
 </header>
-
+<nav>
+  <ul>
+    <li><a href="https://visio.ai/">Home</a></li>
+    <li><a href="https://visio.ai/features">Features</a></li>
+    <li><a href="https://visio.ai/pricing">Pricing</a></li>
+    <li><a href="https://visio.ai/contact">Contact</a></li>
+  </ul>
+</nav>
 <main>
-  <div class="stream-container">
-    <video id="videoPlayer" autoplay muted></video>
-    <div class="stream-info">
-      <h2>Your Show Reel Live Stream</h2>
-      <p>Streamer: <span id="streamerName">Your Name</span></p>
-      <p>Viewers: <span id="viewerCount">0</span></p>
+  <div class="broadcast-container">
+    <div class="video-grid">
+      <div class="video-container">
+        <video id="localVideo" autoplay muted playsinline></video>
+      </div>
+      <div class="video-container">
+        <video id="remoteVideo1" autoplay playsinline></video>
+      </div>
+      <div class="video-container">
+        <video id="remoteVideo2" autoplay playsinline></video>
+      </div>
+      <div class="video-container">
+        <video id="remoteVideo3" autoplay playsinline></video>
+      </div>
     </div>
-    <div class="stream-controls">
-      <button id="startStream">Start Streaming</button>
-      <button id="stopStream">Stop Streaming</button>
-      <button id="toggleMute">Mute/Unmute</button>
-      <button id="toggleCamera">Toggle Camera</button>
-      <button id="shareScreen">Share Screen</button>
-      <button id="recordStream">Start Recording</button>
-      <button id="addOverlay">Add Overlay</button>
+    <div class="chat-container">
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+      </div>
     </div>
   </div>
-
-  <div class="chat-container">
-    <h3>Live Chat</h3>
-    <div id="chat-messages"></div>
-    <input type="text" id="chat-input" placeholder="Type your message...">
-    <button id="send-message">Send</button>
-  </div>
-
-  <div class="settings-panel">
-    <h3>Stream Settings</h3>
-    <div class="settings-grid">
-      <div class="setting-item">
-        <label for="videoQuality">Video Quality:</label>
-        <select id="videoQuality">
-          <option value="480p">480p</option>
-          <option value="720p" selected>720p</option>
-          <option value="1080p">1080p</option>
-          <option value="4K">4K</option>
-        </select>
-      </div>
-      <div class="setting-item">
-        <label for="audioBitrate">Audio Bitrate:</label>
-        <input type="range" id="audioBitrate" min="32" max="320" value="128">
-        <span id="audioBitrateValue">128 kbps</span>
-      </div>
-      <div class="setting-item">
-        <label for="frameRate">Frame Rate:</label>
-        <select id="frameRate">
-          <option value="24">24 fps</option>
-          <option value="30" selected>30 fps</option>
-          <option value="60">60 fps</option>
-        </select>
-      </div>
-      <div class="setting-item">
-        <label for="latencyMode">Latency Mode:</label>
-        <select id="latencyMode">
-          <option value="ultraLow">Ultra-Low</option>
-          <option value="low" selected>Low</option>
-          <option value="normal">Normal</option>
-        </select>
-      </div>
-    </div>
+  <div class="controls">
+    <button class="control-btn" id="startButton">Start Broadcasting</button>
+    <button class="control-btn" id="stopButton">Stop Broadcasting</button>
+    <button class="control-btn" id="muteButton">Mute Audio</button>
+    <button class="control-btn" id="videoButton">Toggle Video</button>
   </div>
 </main>
 
 <script>
-document.addEventListener('DOMContentLoaded', (event) => {
-  const videoPlayer = document.getElementById('videoPlayer');
-  const startStreamButton = document.getElementById('startStream');
-  const stopStreamButton = document.getElementById('stopStream');
-  const toggleMuteButton = document.getElementById('toggleMute');
-  const toggleCameraButton = document.getElementById('toggleCamera');
-  const shareScreenButton = document.getElementById('shareScreen');
-  const recordStreamButton = document.getElementById('recordStream');
-  const addOverlayButton = document.getElementById('addOverlay');
-  const chatInput = document.getElementById('chat-input');
-  const sendMessageButton = document.getElementById('send-message');
-  const chatMessages = document.getElementById('chat-messages');
-  const viewerCount = document.getElementById('viewerCount');
-  const audioBitrate = document.getElementById('audioBitrate');
-  const audioBitrateValue = document.getElementById('audioBitrateValue');
+  let localStream;
+  let peerConnections = {};
+  const configuration = {
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+  };
 
-  let mediaStream = null;
-  let mediaRecorder = null;
-  let isRecording = false;
-
-  startStreamButton.addEventListener('click', async () => {
+  async function startBroadcasting() {
     try {
-      mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      videoPlayer.srcObject = mediaStream;
-      console.log('Stream started');
-      simulateViewerCount();
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      document.getElementById('localVideo').srcObject = localStream;
+      
+      // Simulating peer connections
+      for (let i = 1; i <= 3; i++) {
+        const peerConnection = new RTCPeerConnection(configuration);
+        peerConnections[`remote${i}`] = peerConnection;
+        
+        localStream.getTracks().forEach(track => {
+          peerConnection.addTrack(track, localStream);
+        });
+        
+        peerConnection.ontrack = (event) => {
+          document.getElementById(`remoteVideo${i}`).srcObject = event.streams[0];
+        };
+        
+        // Simulating ICE candidate exchange and connection establishment
+        await simulateConnectionEstablishment(peerConnection, i);
+      }
     } catch (error) {
-      console.error('Error accessing media devices:', error);
+      console.error('Error starting broadcast:', error);
     }
-  });
-
-  stopStreamButton.addEventListener('click', () => {
-    if (mediaStream) {
-      mediaStream.getTracks().forEach(track => track.stop());
-      videoPlayer.srcObject = null;
-      console.log('Stream stopped');
-    }
-  });
-
-  toggleMuteButton.addEventListener('click', () => {
-    if (mediaStream) {
-      const audioTrack = mediaStream.getAudioTracks()[0];
-      audioTrack.enabled = !audioTrack.enabled;
-      console.log(audioTrack.enabled ? 'Unmuted' : 'Muted');
-    }
-  });
-
-  toggleCameraButton.addEventListener('click', () => {
-    if (mediaStream) {
-      const videoTrack = mediaStream.getVideoTracks()[0];
-      videoTrack.enabled = !videoTrack.enabled;
-      console.log(videoTrack.enabled ? 'Camera on' : 'Camera off');
-    }
-  });
-
-  shareScreenButton.addEventListener('click', async () => {
-    try {
-      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-      videoPlayer.srcObject = screenStream;
-      console.log('Screen sharing started');
-    } catch (error) {
-      console.error('Error sharing screen:', error);
-    }
-  });
-
-  recordStreamButton.addEventListener('click', () => {
-    if (!mediaStream) return;
-    if (!isRecording) {
-      mediaRecorder = new MediaRecorder(mediaStream);
-      const chunks = [];
-      mediaRecorder.ondataavailable = e => chunks.push(e.data);
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'video/webm' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'recorded-stream.webm';
-        a.click();
-      };
-      mediaRecorder.start();
-      isRecording = true;
-      recordStreamButton.textContent = 'Stop Recording';
-      console.log('Recording started');
-    } else {
-      mediaRecorder.stop();
-      isRecording = false;
-      recordStreamButton.textContent = 'Start Recording';
-      console.log('Recording stopped');
-    }
-  });
-
-  addOverlayButton.addEventListener('click', () => {
-    const overlay = document.createElement('div');
-    overlay.textContent = 'Live';
-    overlay.style.position = 'absolute';
-    overlay.style.top = '10px';
-    overlay.style.left = '10px';
-    overlay.style.backgroundColor = 'red';
-    overlay.style.color = 'white';
-    overlay.style.padding = '5px 10px';
-    overlay.style.borderRadius = '5px';
-    videoPlayer.parentNode.insertBefore(overlay, videoPlayer.nextSibling);
-  });
-
-  sendMessageButton.addEventListener('click', () => {
-    const message = chatInput.value.trim();
-    if (message) {
-      const messageElement = document.createElement('p');
-      messageElement.innerHTML = `<strong>You:</strong> ${message}`;
-      chatMessages.appendChild(messageElement);
-      chatInput.value = '';
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-  });
-
-  chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      sendMessageButton.click();
-    }
-  });
-
-  audioBitrate.addEventListener('input', (e) => {
-    audioBitrateValue.textContent = `${e.target.value} kbps`;
-  });
-
-  function simulateViewerCount() {
-    let count = 0;
-    setInterval(() => {
-      count += Math.floor(Math.random() * 10);
-      viewerCount.textContent = count;
-    }, 5000);
   }
-});
-</script>
 
-<footer style="text-align: center; padding: 1rem; background-color: #2c3e50; color: white;">
-  <p>© 2023 LiveCaster Pro. Powered by Advanced Streaming Technology</p>
-</footer>
+  async function simulateConnectionEstablishment(peerConnection, index) {
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    
+    // Simulating signaling server exchange
+    setTimeout(async () => {
+      await peerConnection.setRemoteDescription(offer);
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+      
+      // Simulating ICE candidate exchange
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          console.log(`Sending ICE candidate to remote${index}`);
+        }
+      };
+    }, 1000);
+  }
+
+  function stopBroadcasting() {
+    localStream.getTracks().forEach(track => track.stop());
+    document.getElementById('localVideo').srcObject = null;
+    Object.values(peerConnections).forEach(pc => pc.close());
+    peerConnections = {};
+  }
+
+  function toggleAudio() {
+    const audioTrack = localStream.getAudioTracks()[0];
+    audioTrack.enabled = !audioTrack.enabled;
+    document.getElementById('muteButton').textContent = audioTrack.enabled ? 'Mute Audio' : 'Unmute Audio';
+  }
+
+  function toggleVideo() {
+    const videoTrack = localStream.getVideoTracks()[0];
+    videoTrack.enabled = !videoTrack.enabled;
+    document.getElementById('videoButton').textContent = videoTrack.enabled ? 'Disable Video' : 'Enable Video';
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    if (message) {
+      const chatMessages = document.getElementById('chatMessages');
+      const messageElement = document.createElement('p');
+      messageElement.textContent = `You: ${message}`;
+      chatMessages.appendChild(messageElement);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      input.value = '';
+      
+      // Simulating message broadcast to other participants
+      setTimeout(() => {
+        const remoteMessage = document.createElement('p');
+        remoteMessage.textContent = `Remote User: Thanks for your message!`;
+        chatMessages.appendChild(remoteMessage);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }, 1000);
+    }
+  }
+
+  document.getElementById('startButton').addEventListener('click', startBroadcasting);
+  document.getElementById('stopButton').addEventListener('click', stopBroadcasting);
+  document.getElementById('muteButton').addEventListener('click', toggleAudio);
+  document.getElementById('videoButton').addEventListener('click', toggleVideo);
+  document.getElementById('chatInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+</script>
 </body></html>
