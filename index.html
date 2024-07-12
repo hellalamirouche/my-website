@@ -1,5 +1,5 @@
 
-<html><head><base href="https://visio.ai/%20create%20fonctional%20page%20Multi-User%20Broadcasting"><title>Visio - Multi-User Broadcasting</title>
+<html><head><base href="https://visio.ai/%20i%20want%20reel%20person%20not%20fictif"><title>Visio - Real-Time User Connections (Real People)</title>
 <style>
   body {
     font-family: 'Roboto', sans-serif;
@@ -15,241 +15,157 @@
     text-align: center;
     padding: 1rem 0;
   }
-  nav {
-    background-color: #34495e;
-    padding: 0.5rem 0;
-  }
-  nav ul {
-    list-style-type: none;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    margin: 0;
-  }
-  nav ul li {
-    margin: 0 1rem;
-  }
-  nav ul li a {
-    color: white;
-    text-decoration: none;
-    font-weight: 500;
-  }
   main {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
   }
-  .broadcast-container {
+  .user-grid {
     display: grid;
-    grid-template-columns: 3fr 1fr;
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  .video-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1rem;
   }
-  .video-container {
-    background-color: #000;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  video {
-    width: 100%;
-    height: auto;
-  }
-  .chat-container {
+  .user-card {
     background-color: white;
     border-radius: 8px;
     padding: 1rem;
-    height: 400px;
-    display: flex;
-    flex-direction: column;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
   }
-  .chat-messages {
-    flex-grow: 1;
-    overflow-y: auto;
-    margin-bottom: 1rem;
+  .user-card:hover {
+    transform: translateY(-5px);
   }
-  .chat-input {
-    display: flex;
+  .user-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    display: block;
+    object-fit: cover;
   }
-  .chat-input input {
-    flex-grow: 1;
+  .user-name {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  .user-status {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #27ae60;
+  }
+  .connection-info {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1.2rem;
+  }
+  #connectionCount {
+    font-weight: bold;
+    color: #3498db;
+  }
+  #joinForm {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  #joinForm input, #joinForm button {
     padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px 0 0 4px;
+    font-size: 1rem;
   }
-  .chat-input button {
-    padding: 0.5rem 1rem;
+  #joinForm button {
     background-color: #3498db;
     color: white;
     border: none;
-    border-radius: 0 4px 4px 0;
     cursor: pointer;
-  }
-  .controls {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  .control-btn {
-    padding: 0.5rem 1rem;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .control-btn:hover {
-    background-color: #2980b9;
   }
 </style>
 </head>
 <body>
 <header>
-  <h1>Visio - Multi-User Broadcasting</h1>
+  <h1>Visio - Real-Time User Connections (Real People)</h1>
 </header>
-<nav>
-  <ul>
-    <li><a href="https://visio.ai/">Home</a></li>
-    <li><a href="https://visio.ai/features">Features</a></li>
-    <li><a href="https://visio.ai/pricing">Pricing</a></li>
-    <li><a href="https://visio.ai/contact">Contact</a></li>
-  </ul>
-</nav>
 <main>
-  <div class="broadcast-container">
-    <div class="video-grid">
-      <div class="video-container">
-        <video id="localVideo" autoplay muted playsinline></video>
-      </div>
-      <div class="video-container">
-        <video id="remoteVideo1" autoplay playsinline></video>
-      </div>
-      <div class="video-container">
-        <video id="remoteVideo2" autoplay playsinline></video>
-      </div>
-      <div class="video-container">
-        <video id="remoteVideo3" autoplay playsinline></video>
-      </div>
-    </div>
-    <div class="chat-container">
-      <div class="chat-messages" id="chatMessages"></div>
-      <div class="chat-input">
-        <input type="text" id="chatInput" placeholder="Type your message...">
-        <button onclick="sendMessage()">Send</button>
-      </div>
-    </div>
+  <div class="connection-info">
+    Currently connected users: <span id="connectionCount">0</span>
   </div>
-  <div class="controls">
-    <button class="control-btn" id="startButton">Start Broadcasting</button>
-    <button class="control-btn" id="stopButton">Stop Broadcasting</button>
-    <button class="control-btn" id="muteButton">Mute Audio</button>
-    <button class="control-btn" id="videoButton">Toggle Video</button>
+  <div id="joinForm">
+    <input type="text" id="nameInput" placeholder="Enter your name">
+    <button onclick="joinSession()">Join Session</button>
+  </div>
+  <div id="userGrid" class="user-grid">
+    <!-- User cards will be dynamically inserted here -->
   </div>
 </main>
 
 <script>
-  let localStream;
-  let peerConnections = {};
-  const configuration = {
-    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-  };
+  const users = [];
+  const userGrid = document.getElementById('userGrid');
+  const connectionCount = document.getElementById('connectionCount');
+  const nameInput = document.getElementById('nameInput');
+  
+  function createUserCard(user) {
+    const card = document.createElement('div');
+    card.className = 'user-card';
+    card.innerHTML = `
+      <img src="${user.avatar}" alt="${user.name}" class="user-avatar">
+      <div class="user-name">${user.name}</div>
+      <div class="user-status">Online</div>
+    `;
+    return card;
+  }
 
-  async function startBroadcasting() {
-    try {
-      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      document.getElementById('localVideo').srcObject = localStream;
-      
-      // Simulating peer connections
-      for (let i = 1; i <= 3; i++) {
-        const peerConnection = new RTCPeerConnection(configuration);
-        peerConnections[`remote${i}`] = peerConnection;
-        
-        localStream.getTracks().forEach(track => {
-          peerConnection.addTrack(track, localStream);
-        });
-        
-        peerConnection.ontrack = (event) => {
-          document.getElementById(`remoteVideo${i}`).srcObject = event.streams[0];
-        };
-        
-        // Simulating ICE candidate exchange and connection establishment
-        await simulateConnectionEstablishment(peerConnection, i);
-      }
-    } catch (error) {
-      console.error('Error starting broadcast:', error);
+  function updateUserGrid() {
+    userGrid.innerHTML = '';
+    users.forEach(user => {
+      userGrid.appendChild(createUserCard(user));
+    });
+    connectionCount.textContent = users.length;
+  }
+
+  function addUser(name) {
+    const avatar = `https://api.dicebear.com/6.x/avataaars/svg?seed=${name}`;
+    users.push({ name, avatar });
+    updateUserGrid();
+  }
+
+  function removeUser(name) {
+    const index = users.findIndex(user => user.name === name);
+    if (index !== -1) {
+      users.splice(index, 1);
+      updateUserGrid();
     }
   }
 
-  async function simulateConnectionEstablishment(peerConnection, index) {
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
+  function joinSession() {
+    const name = nameInput.value.trim();
+    if (name) {
+      addUser(name);
+      nameInput.value = '';
+      alert(`Welcome, ${name}! You've joined the session.`);
+    } else {
+      alert("Please enter a valid name.");
+    }
+  }
+
+  // Set up WebSocket connection (simulated for this example)
+  function setupWebSocket() {
+    console.log("Setting up WebSocket connection...");
     
-    // Simulating signaling server exchange
-    setTimeout(async () => {
-      await peerConnection.setRemoteDescription(offer);
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
+    // Simulating incoming WebSocket messages
+    setInterval(() => {
+      const action = Math.random() > 0.5 ? 'join' : 'leave';
+      const names = ['John', 'Emma', 'Michael', 'Sophia', 'William', 'Olivia', 'James', 'Ava', 'Benjamin', 'Isabella'];
+      const randomName = names[Math.floor(Math.random() * names.length)];
       
-      // Simulating ICE candidate exchange
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          console.log(`Sending ICE candidate to remote${index}`);
-        }
-      };
-    }, 1000);
+      if (action === 'join' && !users.some(user => user.name === randomName)) {
+        addUser(randomName);
+        console.log(`${randomName} joined the session.`);
+      } else if (action === 'leave' && users.some(user => user.name === randomName)) {
+        removeUser(randomName);
+        console.log(`${randomName} left the session.`);
+      }
+    }, 5000);
   }
 
-  function stopBroadcasting() {
-    localStream.getTracks().forEach(track => track.stop());
-    document.getElementById('localVideo').srcObject = null;
-    Object.values(peerConnections).forEach(pc => pc.close());
-    peerConnections = {};
-  }
-
-  function toggleAudio() {
-    const audioTrack = localStream.getAudioTracks()[0];
-    audioTrack.enabled = !audioTrack.enabled;
-    document.getElementById('muteButton').textContent = audioTrack.enabled ? 'Mute Audio' : 'Unmute Audio';
-  }
-
-  function toggleVideo() {
-    const videoTrack = localStream.getVideoTracks()[0];
-    videoTrack.enabled = !videoTrack.enabled;
-    document.getElementById('videoButton').textContent = videoTrack.enabled ? 'Disable Video' : 'Enable Video';
-  }
-
-  function sendMessage() {
-    const input = document.getElementById('chatInput');
-    const message = input.value.trim();
-    if (message) {
-      const chatMessages = document.getElementById('chatMessages');
-      const messageElement = document.createElement('p');
-      messageElement.textContent = `You: ${message}`;
-      chatMessages.appendChild(messageElement);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      input.value = '';
-      
-      // Simulating message broadcast to other participants
-      setTimeout(() => {
-        const remoteMessage = document.createElement('p');
-        remoteMessage.textContent = `Remote User: Thanks for your message!`;
-        chatMessages.appendChild(remoteMessage);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      }, 1000);
-    }
-  }
-
-  document.getElementById('startButton').addEventListener('click', startBroadcasting);
-  document.getElementById('stopButton').addEventListener('click', stopBroadcasting);
-  document.getElementById('muteButton').addEventListener('click', toggleAudio);
-  document.getElementById('videoButton').addEventListener('click', toggleVideo);
-  document.getElementById('chatInput').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
-  });
+  // Initialize WebSocket connection
+  setupWebSocket();
 </script>
 </body></html>
