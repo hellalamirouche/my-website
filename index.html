@@ -1,5 +1,5 @@
 
-<html><head><base href="https://visio.ai/"><title>Visio AI - WebRTC Video Conferencing</title>
+<html><head><base href="https://visio.ai/"><title>Visio AI - WebRTC Video Conferencing (Debug Mode)</title>
 <style>
   body, html {
     margin: 0;
@@ -121,12 +121,21 @@
     border-radius: 5px;
     display: none;
   }
+  #debugInfo {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #ffe6e6;
+    border-radius: 5px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="sidebar">
-    <h2>Visio AI Conference</h2>
+    <h2>Visio AI Conference (Debug)</h2>
     <div id="createForm">
       <input type="text" id="createNameInput" placeholder="Enter your name">
       <button onclick="createRoom()">Create New Room</button>
@@ -139,11 +148,12 @@
     <div id="roomInfo"></div>
     <h3>Participants</h3>
     <div id="participantsList"></div>
+    <div id="debugInfo"></div>
   </div>
   <div class="main-content">
     <div id="videoGrid" class="video-grid">
       <div class="waiting-message">
-        <h3>Welcome to Visio AI</h3>
+        <h3>Welcome to Visio AI (Debug Mode)</h3>
         <p>Create a new room or join an existing one to start.</p>
       </div>
     </div>
@@ -164,6 +174,7 @@
   const joinNameInput = document.getElementById('joinNameInput');
   const roomInput = document.getElementById('roomInput');
   const roomInfo = document.getElementById('roomInfo');
+  const debugInfo = document.getElementById('debugInfo');
   const muteBtn = document.getElementById('muteBtn');
   const videoBtn = document.getElementById('videoBtn');
   const shareBtn = document.getElementById('shareBtn');
@@ -177,6 +188,7 @@
   let roomId;
   let localPeerConnection;
   let localUuid;
+  let socket;
 
   const configuration = {
     iceServers: [
@@ -184,6 +196,12 @@
       { urls: 'stun:stun1.l.google.com:19302' },
     ]
   };
+
+  function log(message) {
+    console.log(message);
+    debugInfo.textContent += message + '\n';
+    debugInfo.scrollTop = debugInfo.scrollHeight;
+  }
 
   async function createRoom() {
     const name = createNameInput.value.trim();
@@ -218,22 +236,25 @@
       localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       localUuid = generateUuid();
       setupLocalVideo(name);
+      log('Local stream initialized');
     } catch (error) {
       console.error('Error accessing media devices:', error);
+      log('Error accessing media devices: ' + error.message);
       alert('Failed to access camera and microphone. Please ensure you have given the necessary permissions.');
     }
   }
 
   function initializeWebSocket(roomId, name) {
-    const socket = new WebSocket(`wss://visio.ai/room/${roomId}`);
+    socket = new WebSocket(`wss://visio.ai/room/${roomId}`);
 
     socket.onopen = () => {
-      console.log('Connected to WebSocket server');
+      log('Connected to WebSocket server');
       socket.send(JSON.stringify({ type: 'join', name, uuid: localUuid }));
     };
 
     socket.onmessage = async (event) => {
       const message = JSON.parse(event.data);
+      log('Received message: ' + JSON.stringify(message));
       switch (message.type) {
         case 'user-joined':
           if (message.uuid !== localUuid) {
@@ -251,24 +272,28 @@
 
     socket.onerror = (error) => {
       console.error('WebSocket error:', error);
+      log('WebSocket error: ' + error.message);
     };
 
     socket.onclose = () => {
-      console.log('Disconnected from WebSocket server');
+      log('Disconnected from WebSocket server');
     };
   }
 
   async function createPeerConnection(remoteUuid, remoteName) {
+    log('Creating peer connection for ' + remoteName);
     const peerConnection = new RTCPeerConnection(configuration);
     participants.set(remoteUuid, { peerConnection, name: remoteName });
 
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
+        log('Sending ICE candidate');
         sendSignalingData(remoteUuid, { type: 'ice-candidate', candidate: event.candidate });
       }
     };
 
     peerConnection.ontrack = (event) => {
+      log('Received remote track');
       addVideoElement(remoteName, event.streams[0], remoteUuid);
     };
 
@@ -277,15 +302,18 @@
     try {
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
+      log('Sending offer');
       sendSignalingData(remoteUuid, { type: 'offer', sdp: offer.sdp });
     } catch (error) {
       console.error('Error creating offer:', error);
+      log('Error creating offer: ' + error.message);
     }
 
     updateParticipantsList();
   }
 
   function removePeerConnection(remoteUuid) {
+    log('Removing peer connection for ' + remoteUuid);
     const participant = participants.get(remoteUuid);
     if (participant) {
       participant.peerConnection.close();
@@ -303,26 +331,27 @@
 
     switch (data.type) {
       case 'offer':
+        log('Received offer');
         await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: data.sdp }));
         const answer = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answer);
+        log('Sending answer');
         sendSignalingData(remoteUuid, { type: 'answer', sdp: answer.sdp });
         break;
       case 'answer':
+        log('Received answer');
         await peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: data.sdp }));
         break;
       case 'ice-candidate':
+        log('Received ICE candidate');
         await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
         break;
     }
   }
 
   function sendSignalingData(remoteUuid, data) {
-    const socket = new WebSocket(`wss://visio.ai/room/${roomId}`);
-    socket.onopen = () => {
-      socket.send(JSON.stringify({ type: 'signal', uuid: localUuid, remoteUuid, data }));
-      socket.close();
-    };
+    log('Sending signaling data: ' + JSON.stringify(data));
+    socket.send(JSON.stringify({ type: 'signal', uuid: localUuid, remoteUuid, data }));
   }
 
   function setupLocalVideo(name) {
@@ -334,6 +363,7 @@
   }
 
   function addVideoElement(name, stream, uuid) {
+    log('Adding video element for ' + name);
     const videoContainer = document.createElement('div');
     videoContainer.className = 'video-container';
     videoContainer.id = `video-${uuid}`;
@@ -350,6 +380,7 @@
   }
 
   function removeVideoElement(uuid) {
+    log('Removing video element for ' + uuid);
     const videoElement = document.getElementById(`video-${uuid}`);
     if (videoElement) {
       videoElement.remove();
@@ -381,12 +412,14 @@
     isAudioMuted = !isAudioMuted;
     localStream.getAudioTracks()[0].enabled = !isAudioMuted;
     muteBtn.textContent = isAudioMuted ? 'Unmute' : 'Mute';
+    log('Audio ' + (isAudioMuted ? 'muted' : 'unmuted'));
   });
 
   videoBtn.addEventListener('click', () => {
     isVideoStopped = !isVideoStopped;
     localStream.getVideoTracks()[0].enabled = !isVideoStopped;
     videoBtn.textContent = isVideoStopped ? 'Start Video' : 'Stop Video';
+    log('Video ' + (isVideoStopped ? 'stopped' : 'started'));
   });
 
   shareBtn.addEventListener('click', async () => {
@@ -398,9 +431,11 @@
         isScreenSharing = true;
         shareBtn.textContent = 'Stop Sharing';
         videoTrack.onended = stopScreenSharing;
+        log('Screen sharing started');
       } catch (error) {
         console.error('Error sharing screen:', error);
-        alert('Failed to share screen. Please ensure you have given the necessary permissions.');
+        log('Error sharing screen: ' + error.message);
+        alert('Failed toshare screen. Please ensure you have given the necessary permissions.');
       }
     } else {
       stopScreenSharing();
@@ -408,9 +443,14 @@
   });
 
   function replaceVideoTrack(newTrack) {
-    const videoSender = localPeerConnection.getSenders().find(sender => sender.track.kind === 'video');
-    videoSender.replaceTrack(newTrack);
+    participants.forEach((participant) => {
+      const videoSender = participant.peerConnection.getSenders().find(sender => sender.track.kind === 'video');
+      if (videoSender) {
+        videoSender.replaceTrack(newTrack);
+      }
+    });
     document.getElementById('video-local').querySelector('video').srcObject = new MediaStream([newTrack]);
+    log('Video track replaced');
   }
 
   function stopScreenSharing() {
@@ -420,6 +460,7 @@
       replaceVideoTrack(videoTrack);
       isScreenSharing = false;
       shareBtn.textContent = 'Share Screen';
+      log('Screen sharing stopped');
     }
   }
 
@@ -438,6 +479,10 @@
     participantsList.innerHTML = '';
     roomInfo.style.display = 'none';
     document.querySelector('.waiting-message').style.display = 'block';
+    if (socket) {
+      socket.close();
+    }
+    log('Left the room');
     alert('You have left the room');
   });
 
