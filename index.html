@@ -16,9 +16,9 @@ body { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background-col
 .card-content { padding: 20px; }
 .btn { background-color: var(--accent-color); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; transition: background-color 0.3s, transform 0.3s; }
 .btn:hover { background-color: #3cc7a5; transform: scale(1.05); }
-#videoContainer { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
-.videoWrapper { position: relative; width: 320px; }
-video { width: 100%; height: 240px; background-color: #ddd; border-radius: 8px; }
+#videoContainer { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.videoWrapper { position: relative; width: 100%; padding-top: 75%; /* 4:3 Aspect Ratio */ }
+video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #ddd; border-radius: 8px; object-fit: cover; }
 .controls { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
 .control-btn { background-color: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; transition: background-color 0.3s, transform 0.3s; }
 .control-btn:hover { background-color: rgba(0,0,0,0.7); transform: scale(1.1); }
@@ -37,6 +37,7 @@ video { width: 100%; height: 240px; background-color: #ddd; border-radius: 8px; 
 #inviteForm { margin-top: 20px; }
 #inviteEmail { width: calc(100% - 120px); padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
 #sendInvite { width: 100px; }
+.participant-name { position: absolute; bottom: 50px; left: 10px; background-color: rgba(0,0,0,0.5); color: white; padding: 5px 10px; border-radius: 4px; }
 </style></head><body>
 <div class="header">
   <h1>WebRTC AI Conference Hub</h1>
@@ -44,59 +45,36 @@ video { width: 100%; height: 240px; background-color: #ddd; border-radius: 8px; 
 <div class="container">
   <div class="card">
     <div class="card-header">
-      <span>Next-Gen AI-Powered Conference Experience</span>
-      <span id="participantCount">Participants: 1</span>
+      <span>AI-Enhanced Conference Room</span>
+      <span id="participantCount">Participants: 5</span>
     </div>
-    <div class="card-content">
-      <p>Welcome to the future of online meetings. Our WebRTC AI Conference Hub combines cutting-edge web technologies with advanced artificial intelligence to create an unparalleled communication experience.</p>
-      <div class="ai-features">
-        <div class="ai-feature">
-          <div class="ai-icon">🧠</div>
-          <h3>Adaptive AI Noise Cancellation</h3>
-          <p>Our AI dynamically adapts to your environment, eliminating background noise in real-time.</p>
-        </div>
-        <div class="ai-feature">
-          <div class="ai-icon">🗣️</div>
-          <h3>Multilingual Real-time Translation</h3>
-          <p>Break language barriers with instant speech translation in over 50 languages.</p>
-        </div>
-        <div class="ai-feature">
-          <div class="ai-icon">📝</div>
-          <h3>Smart Transcription & Summarization</h3>
-          <p>Get AI-generated meeting minutes and key point summaries.</p>
-        </div>
-        <div class="ai-feature">
-          <div class="ai-icon">🎭</div>
-          <h3>Context-Aware Virtual Backgrounds</h3>
-          <p>AI-generated backgrounds that adapt to your conversation topics.</p>
-        </div>
-        <div class="ai-feature">
-          <div class="ai-icon">👥</div>
-          <h3>Emotion & Engagement Analysis</h3>
-          <p>Gain insights into participant engagement and sentiment in real-time.</p>
-        </div>
-        <div class="ai-feature">
-          <div class="ai-icon">🤖</div>
-          <h3>AI Meeting Assistant</h3>
-          <p>Get real-time suggestions, fact-checking, and resource recommendations.</p>
-        </div>
-      </div>
-      <button class="btn" onclick="startAIConferenceHub()">Launch AI Conference Hub</button>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-header">AI-Enhanced Conference Room</div>
     <div class="card-content">
       <div id="videoContainer">
         <div class="videoWrapper">
           <video id="localVideo" autoplay muted playsinline></video>
-          <p>You</p>
+          <div class="participant-name">You</div>
           <div class="controls">
             <button class="control-btn" onclick="toggleAudio()">🎤</button>
             <button class="control-btn" onclick="toggleVideo()">📹</button>
             <button class="control-btn" onclick="startScreenShare()">🖥️</button>
             <button class="control-btn" onclick="toggleAIBackground()">🎭</button>
           </div>
+        </div>
+        <div class="videoWrapper">
+          <video autoplay playsinline></video>
+          <div class="participant-name">Alice</div>
+        </div>
+        <div class="videoWrapper">
+          <video autoplay playsinline></video>
+          <div class="participant-name">Bob</div>
+        </div>
+        <div class="videoWrapper">
+          <video autoplay playsinline></video>
+          <div class="participant-name">Charlie</div>
+        </div>
+        <div class="videoWrapper">
+          <video autoplay playsinline></video>
+          <div class="participant-name">Dana</div>
         </div>
       </div>
     </div>
@@ -136,7 +114,7 @@ let isAudioMuted = false;
 let isVideoOff = false;
 let isAIBackgroundOn = false;
 let isAutoTranslationOn = false;
-let participantCount = 1;
+let participantCount = 5;
 
 async function startAIConferenceHub() {
   try {
@@ -148,55 +126,44 @@ async function startAIConferenceHub() {
     
     console.log("Connected to AI-powered signaling server");
     
-    setupAIEnhancedPeerConnection("remote1");
-    setupAIEnhancedPeerConnection("remote2");
-
+    setupAIEnhancedPeerConnections();
     initializeAIFeatures();
-    updateParticipantCount(3); // Including the local user
+    updateParticipantCount(participantCount);
   } catch (err) {
     console.error("Error starting AI Conference Hub:", err);
   }
 }
 
-function setupAIEnhancedPeerConnection(peerId) {
-  const peerConnection = new RTCPeerConnection({
-    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+function setupAIEnhancedPeerConnections() {
+  const remoteVideos = document.querySelectorAll('#videoContainer video:not(#localVideo)');
+  remoteVideos.forEach((video, index) => {
+    const peerId = `remote${index + 1}`;
+    const peerConnection = new RTCPeerConnection({
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    });
+    peerConnections[peerId] = peerConnection;
+
+    localStream.getTracks().forEach(track => {
+      peerConnection.addTrack(track, localStream);
+    });
+
+    peerConnection.ontrack = event => {
+      video.srcObject = event.streams[0];
+    };
+
+    peerConnection.onicecandidate = event => {
+      if (event.candidate) {
+        console.log(`New AI-enhanced ICE candidate for ${peerId}:`, event.candidate);
+      }
+    };
+
+    peerConnection.createOffer()
+      .then(offer => peerConnection.setLocalDescription(offer))
+      .then(() => {
+        console.log(`AI-enhanced local description set for ${peerId}`);
+      })
+      .catch(err => console.error(`Error creating AI-enhanced offer for ${peerId}:`, err));
   });
-  peerConnections[peerId] = peerConnection;
-
-  localStream.getTracks().forEach(track => {
-    peerConnection.addTrack(track, localStream);
-  });
-
-  peerConnection.ontrack = event => {
-    const remoteVideo = document.createElement('video');
-    remoteVideo.srcObject = event.streams[0];
-    remoteVideo.autoplay = true;
-    remoteVideo.playsinline = true;
-    
-    const videoWrapper = document.createElement('div');
-    videoWrapper.className = 'videoWrapper';
-    videoWrapper.appendChild(remoteVideo);
-    
-    const peerName = document.createElement('p');
-    peerName.textContent = `AI-Enhanced Peer ${peerId}`;
-    videoWrapper.appendChild(peerName);
-    
-    document.getElementById('videoContainer').appendChild(videoWrapper);
-  };
-
-  peerConnection.onicecandidate = event => {
-    if (event.candidate) {
-      console.log("New AI-enhanced ICE candidate:", event.candidate);
-    }
-  };
-
-  peerConnection.createOffer()
-    .then(offer => peerConnection.setLocalDescription(offer))
-    .then(() => {
-      console.log("AI-enhanced local description set");
-    })
-    .catch(err => console.error("Error creating AI-enhanced offer:", err));
 }
 
 function updateParticipantCount(count) {
@@ -214,13 +181,11 @@ function initializeAIFeatures() {
 }
 
 function startAdaptiveNoiseCancellation() {
-  console.log("Adaptive AI noise cancellation activated");
-  // Simulated functionality
+  console.log("Adaptive AI noise cancellation activated for all participants");
 }
 
 function initializeMultilingualTranslation() {
-  console.log("Multilingual real-time translation system online");
-  // Simulated functionality
+  console.log("Multilingual real-time translation system online for all participants");
 }
 
 function beginSmartTranscription() {
@@ -234,23 +199,28 @@ function beginSmartTranscription() {
 }
 
 function activateEmotionAnalysis() {
-  console.log("Emotion and engagement analysis module activated");
-  // Simulated functionality
+  console.log("Emotion and engagement analysis module activated for all participants");
 }
 
 function launchAIMeetingAssistant() {
-  console.log("AI Meeting Assistant is now online and ready to assist");
-  // Simulated functionality
+  console.log("AI Meeting Assistant is now online and ready to assist all participants");
 }
 
 function toggleAudio() {
   isAudioMuted = !isAudioMuted;
   localStream.getAudioTracks().forEach(track => track.enabled = !isAudioMuted);
+  updateControlButtonState('audio', isAudioMuted);
 }
 
 function toggleVideo() {
   isVideoOff = !isVideoOff;
   localStream.getVideoTracks().forEach(track => track.enabled = !isVideoOff);
+  updateControlButtonState('video', isVideoOff);
+}
+
+function updateControlButtonState(control, isOff) {
+  const button = document.querySelector(`.control-btn:nth-child(${control === 'audio' ? 1 : 2})`);
+  button.textContent = isOff ? (control === 'audio' ? '🔇' : '🚫') : (control === 'audio' ? '🎤' : '📹');
 }
 
 async function startScreenShare() {
@@ -263,16 +233,19 @@ async function startScreenShare() {
       sender.replaceTrack(videoTrack);
     });
     
+    document.getElementById('localVideo').srcObject = screenStream;
+    
     videoTrack.onended = () => {
       Object.values(peerConnections).forEach(pc => {
         const sender = pc.getSenders().find(s => s.track.kind === 'video');
         sender.replaceTrack(localStream.getVideoTracks()[0]);
       });
+      document.getElementById('localVideo').srcObject = localStream;
     };
 
     const chatContainer = document.getElementById('chatContainer');
     const screenShareMessage = document.createElement('p');
-    screenShareMessage.textContent = "System: You started sharing your screen.";
+    screenShareMessage.textContent = "System: You started sharing your screen. All participants can now see your screen.";
     chatContainer.appendChild(screenShareMessage);
     chatContainer.scrollTop = chatContainer.scrollHeight;
   } catch (err) {
@@ -283,7 +256,11 @@ async function startScreenShare() {
 function toggleAIBackground() {
   isAIBackgroundOn = !isAIBackgroundOn;
   console.log(isAIBackgroundOn ? "Context-aware AI background activated" : "Context-aware AI background deactivated");
-  // Simulated functionality
+  const chatContainer = document.getElementById('chatContainer');
+  const aiBackgroundMessage = document.createElement('p');
+  aiBackgroundMessage.textContent = `System: ${isAIBackgroundOn ? "AI-powered dynamic background activated. Your background will now adapt to the conversation context." : "AI-powered dynamic background deactivated. Your original background is now visible."}`;
+  chatContainer.appendChild(aiBackgroundMessage);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
 function sendAIEnhancedMessage() {
@@ -308,17 +285,21 @@ function sendAIEnhancedMessage() {
 }
 
 function generateSmartTranscript() {
+  const participants = ['You', 'Alice', 'Bob', 'Charlie', 'Dana'];
   const topics = ["project timeline", "budget allocation", "team collaboration", "AI integration", "market analysis"];
   const actions = ["discussed", "analyzed", "proposed", "reviewed", "scheduled"];
-  return `The team ${actions[Math.floor(Math.random() * actions.length)]} ${topics[Math.floor(Math.random() * topics.length)]} with high engagement.`;
+  const participant = participants[Math.floor(Math.random() * participants.length)];
+  const topic = topics[Math.floor(Math.random() * topics.length)];
+  const action = actions[Math.floor(Math.random() * actions.length)];
+  return `${participant} ${action} the ${topic} with high engagement. Other participants provided valuable insights.`;
 }
 
 function generateAIEnhancedResponse(message) {
   const responses = [
-    "Based on our discussion and current market trends, I recommend...",
-    "I've analyzed the data you've presented, and here's an optimized strategy...",
-    "Considering the project timeline and resources, the AI suggests...",
-    "I've cross-referenced your input with our database, and here's a data-driven solution..."
+    "Based on our discussion and current market trends, I recommend focusing on AI-driven customer experience optimization. This aligns with the project goals discussed earlier.",
+    "I've analyzed the data you've presented, and here's an optimized strategy: Implement a phased approach for the AI integration, starting with natural language processing to enhance our customer support channels.",
+    "Considering the project timeline and resources, the AI suggests prioritizing the development of our machine learning models for predictive analytics. This will provide the most immediate impact on our business objectives.",
+    "I've cross-referenced your input with our database, and here's a data-driven solution: Utilize a hybrid cloud architecture for our AI systems to balance performance and cost-effectiveness."
   ];
   return responses[Math.floor(Math.random() * responses.length)];
 }
@@ -326,27 +307,39 @@ function generateAIEnhancedResponse(message) {
 function requestAISummary() {
   console.log("Generating AI-powered meeting summary...");
   const summaryElement = document.createElement('p');
-  summaryElement.textContent = `AI Summary: The meeting focused on project timelines and resource allocation. Key decisions were made regarding the AI integration phase, with a consensus to accelerate the development of natural language processing components. Action items include updating the project roadmap and scheduling a follow-up meeting with the machine learning team. Current participant count: ${participantCount}`;
+  summaryElement.textContent = `AI Summary: The meeting focused on project timelines and resource allocation for our AI integration initiative. Key decisions were made regarding the acceleration of natural language processing components. Action items include updating the project roadmap, scheduling a follow-up meeting with the machine learning team, and conducting a cost-benefit analysis for cloud infrastructure options. All ${participantCount} participants showed high engagement, particularly during the AI ethics discussion.`;
   document.getElementById('chatContainer').appendChild(summaryElement);
 }
 
 function toggleAutoTranslation() {
   isAutoTranslationOn = !isAutoTranslationOn;
-  console.log(isAutoTranslationOn ? "Auto-translation activated" : "Auto-translation deactivated");
-  // Simulated functionality
+  console.log(isAutoTranslationOn ? "Auto-translation activated for all participants" : "Auto-translation deactivated");
+  const chatContainer = document.getElementById('chatContainer');
+  const translationMessage = document.createElement('p');
+  translationMessage.textContent = `System: ${isAutoTranslationOn ? "Real-time translation is now active. All messages will be automatically translated to each participant's preferred language." : "Real-time translation has been deactivated. Messages will appear in their original language."}`;
+  chatContainer.appendChild(translationMessage);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
 function analyzeGroupDynamics() {
   console.log("Analyzing group dynamics and participant engagement...");
   const analysisElement = document.createElement('p');
-  analysisElement.textContent = `AI Analysis: Group dynamics are positive with balanced participation among ${participantCount} participants. Engagement levels are high, particularly during discussions on AI integration. Participant A shows increased enthusiasm when discussing technical aspects, while Participant B excels in strategic planning dialogues.`;
+  analysisElement.textContent = `AI Analysis: Group dynamics are positive with balanced participation among ${participantCount} participants. Engagement levels are high, particularly during discussions on AI integration and ethical considerations. Alice shows increased enthusiasm when discussing technical aspects, while Bob excels in strategic planning dialogues. Charlie has been actively contributing to the AI ethics conversation, and Dana has provided valuable insights on market trends. Overall, the team demonstrates strong collaborative skills and a shared vision for the project.`;
   document.getElementById('chatContainer').appendChild(analysisElement);
 }
 
 function generateActionItems() {
   console.log("Generating AI-recommended action items...");
   const actionItemsElement = document.createElement('p');
-  actionItemsElement.textContent = `AI-Generated Action Items for ${participantCount} participants:\n1. Schedule deep-dive session on AI model selection (Owner: Tech Lead)\n2. Create project timeline visualization (Owner: Project Manager)\n3. Research potential AI ethics considerations (Owner: Legal Team)\n4. Develop prototype for user interface with AI integration (Owner: UX Team)\n5. Prepare cost-benefit analysis for proposed AI solutions (Owner: Finance Team)`;
+  actionItemsElement.textContent = `AI-Generated Action Items for ${participantCount} participants:
+1. Schedule deep-dive session on AI model selection (Owner: Alice)
+2. Create project timeline visualization with key milestones (Owner: Bob)
+3. Research potential AI ethics considerations and draft initial guidelines (Owner: Charlie)
+4. Develop prototype for user interface with AI integration (Owner: Dana)
+5. Prepare cost-benefit analysis for proposed AI solutions (Owner: You)
+6. Set up weekly cross-functional team meetings to ensure alignment
+7. Investigate partnerships with AI ethics advisory boards
+8. Create a knowledge sharing platform for the team to document AI-related learnings`;
   document.getElementById('chatContainer').appendChild(actionItemsElement);
 }
 
@@ -356,13 +349,28 @@ function startPrivateChat() {
   privateChatMessage.textContent = "System: You've initiated a private chat. Select a participant to start the conversation.";
   chatContainer.appendChild(privateChatMessage);
   
-  // Simulating participant selection
-  setTimeout(() => {
-    const participantSelection = document.createElement('p');
-    participantSelection.textContent = "System: Private chat started with Participant A. Your messages will now be visible only to them.";
-    chatContainer.appendChild(participantSelection);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-  }, 1500);
+  const participants = ['Alice', 'Bob', 'Charlie', 'Dana'];
+  participants.forEach(participant => {
+    const participantButton = document.createElement('button');
+    participantButton.textContent = participant;
+    participantButton.classList.add('option-btn');
+    participantButton.onclick = () => startPrivateChatWith(participant);
+    chatContainer.appendChild(participantButton);
+  });
+  
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function startPrivateChatWith(participant) {
+  const chatContainer = document.getElementById('chatContainer');
+  const participantSelection = document.createElement('p');
+  participantSelection.textContent = `System: Private chat started with ${participant}. Your messages will now be visible only to them.`;
+  chatContainer.appendChild(participantSelection);
+  
+  // Remove participant selection buttons
+  document.querySelectorAll('.option-btn').forEach(btn => btn.remove());
+  
+  chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
 document.getElementById('inviteForm').addEventListener('submit', function(e) {
@@ -374,30 +382,19 @@ document.getElementById('inviteForm').addEventListener('submit', function(e) {
   chatContainer.appendChild(inviteMessage);
   chatContainer.scrollTop = chatContainer.scrollHeight;
   document.getElementById('inviteEmail').value = '';
+  
+  // Simulate new participant joining after a short delay
+  setTimeout(() => {
+    const joinMessage = document.createElement('p');
+    joinMessage.textContent = `System: ${email} has joined the conference.`;
+    chatContainer.appendChild(joinMessage);
+    updateParticipantCount(participantCount + 1);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }, 3000);
 });
 
-// Simulating participant join/leave events
-setInterval(() => {
-  const randomChange = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
-  const newCount = Math.max(1, participantCount + randomChange);
-  if (newCount !== participantCount) {
-    updateParticipantCount(newCount);
-    const chatContainer = document.getElementById('chatContainer');
-    const updateMessage = document.createElement('p');
-    updateMessage.textContent = `System: ${randomChange > 0 ? 'A new participant joined' : 'A participant left'} the conference. Total participants: ${newCount}`;
-    chatContainer.appendChild(updateMessage);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-  }
-}, 30000);
-
-// Simulating an AI-initiated interaction
-setTimeout(() => {
-  const chatContainer = document.getElementById('chatContainer');
-  const aiMessage = document.createElement('p');
-  aiMessage.textContent = `AI Assistant: I've noticed a pattern in our discussions among ${participantCount} participants that suggests we might benefit from a brainstorming session on innovative AI applications in our industry. Would you like me to schedule this and prepare some initial talking points based on our conversation history and current market trends?`;
-  chatContainer.appendChild(aiMessage);
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-}, 15000);
+// Initialize the conference hub when the page loads
+window.onload = startAIConferenceHub;
 
 </script>
 </body></html>
