@@ -1,241 +1,274 @@
 
-<html><head><base href="https://visio.ai/"><title>Visio - Real-Time User Connections with Camera Access</title>
+<html><head><base href="https://visio.ai/%20de%20not%20use%20fake%20user"><title>Visio AI - Real-Time Video Conferencing</title>
 <style>
-  body {
-    font-family: 'Roboto', sans-serif;
-    line-height: 1.6;
+  body, html {
     margin: 0;
     padding: 0;
-    background-color: #f4f7f9;
-    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100%;
+    overflow: hidden;
   }
-  header {
-    background-color: #2c3e50;
-    color: white;
-    text-align: center;
-    padding: 1rem 0;
+  .container {
+    display: flex;
+    height: 100vh;
   }
-  main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
+  .sidebar {
+    width: 300px;
+    background-color: #f3f2f1;
+    padding: 20px;
+    overflow-y: auto;
   }
-  .user-grid {
+  .main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .video-grid {
+    flex-grow: 1;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    padding: 20px;
+    background-color: #2f2f2f;
+    overflow-y: auto;
   }
-  .user-card {
-    background-color: white;
+  .video-container {
+    background-color: #1f1f1f;
     border-radius: 8px;
-    padding: 1rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
-    cursor: pointer;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
   }
-  .user-card:hover {
-    transform: translateY(-5px);
-  }
-  .user-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    margin: 0 auto 1rem;
-    display: block;
-    object-fit: cover;
-  }
-  .user-name {
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-  }
-  .user-status {
-    text-align: center;
-    font-size: 0.9rem;
-    color: #27ae60;
-  }
-  .connection-info {
-    text-align: center;
-    margin-bottom: 2rem;
-    font-size: 1.2rem;
-  }
-  #connectionCount {
-    font-weight: bold;
-    color: #3498db;
-  }
-  #joinForm {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-  #joinForm input, #joinForm button {
-    padding: 0.5rem;
-    font-size: 1rem;
-  }
-  #joinForm button {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  #cameraModal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
+  .video-container video {
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.4);
+    object-fit: cover;
   }
-  .modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
+  .controls {
+    display: flex;
+    justify-content: center;
     padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 600px;
+    background-color: #f3f2f1;
   }
-  .close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
+  .control-btn {
+    margin: 0 10px;
+    padding: 10px 20px;
+    background-color: #464775;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .control-btn:hover {
+    background-color: #5c5c8a;
+  }
+  .participant {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 5px;
+  }
+  .participant-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    background-color: #464775;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-weight: bold;
-    cursor: pointer;
   }
-  .close:hover,
-  .close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
+  .participant-name {
+    font-weight: bold;
   }
-  #userVideo {
+  #joinForm {
+    margin-bottom: 20px;
+  }
+  #joinForm input {
     width: 100%;
-    max-width: 640px;
-    height: auto;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  #joinForm button {
+    width: 100%;
+    padding: 10px;
+    background-color: #464775;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .waiting-message {
+    text-align: center;
+    color: #666;
+    margin-top: 20px;
   }
 </style>
 </head>
 <body>
-<header>
-  <h1>Visio - Real-Time User Connections with Camera Access</h1>
-</header>
-<main>
-  <div class="connection-info">
-    Currently connected users: <span id="connectionCount">0</span>
+<div class="container">
+  <div class="sidebar">
+    <h2>Participants</h2>
+    <div id="joinForm">
+      <input type="text" id="nameInput" placeholder="Enter your name">
+      <button onclick="joinMeeting()">Join Meeting</button>
+    </div>
+    <div id="participantsList"></div>
   </div>
-  <div id="joinForm">
-    <input type="text" id="nameInput" placeholder="Enter your name">
-    <button onclick="joinSession()">Join Session</button>
-  </div>
-  <div id="userGrid" class="user-grid">
-    <!-- User cards will be dynamically inserted here -->
-  </div>
-</main>
-
-<div id="cameraModal">
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <h2 id="modalUserName"></h2>
-    <video id="userVideo" autoplay playsinline></video>
+  <div class="main-content">
+    <div id="videoGrid" class="video-grid">
+      <div class="waiting-message">
+        <h3>Welcome to Visio AI</h3>
+        <p>Enter your name and click "Join Meeting" to start.</p>
+        <p>Other participants will appear here when they join.</p>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="control-btn" id="muteBtn">Mute</button>
+      <button class="control-btn" id="videoBtn">Stop Video</button>
+      <button class="control-btn" id="shareBtn">Share Screen</button>
+      <button class="control-btn" id="leaveBtn">Leave Meeting</button>
+    </div>
   </div>
 </div>
 
 <script>
-  const users = [];
-  const userGrid = document.getElementById('userGrid');
-  const connectionCount = document.getElementById('connectionCount');
+  const participants = [];
+  const videoGrid = document.getElementById('videoGrid');
+  const participantsList = document.getElementById('participantsList');
   const nameInput = document.getElementById('nameInput');
-  const modal = document.getElementById('cameraModal');
-  const modalUserName = document.getElementById('modalUserName');
-  const userVideo = document.getElementById('userVideo');
-  const closeBtn = document.getElementsByClassName('close')[0];
-  
+  const muteBtn = document.getElementById('muteBtn');
+  const videoBtn = document.getElementById('videoBtn');
+  const shareBtn = document.getElementById('shareBtn');
+  const leaveBtn = document.getElementById('leaveBtn');
+
   let localStream;
+  let screenStream;
+  let isAudioMuted = false;
+  let isVideoStopped = false;
+  let isScreenSharing = false;
 
-  function createUserCard(user) {
-    const card = document.createElement('div');
-    card.className = 'user-card';
-    card.innerHTML = `
-      <img src="${user.avatar}" alt="${user.name}" class="user-avatar">
-      <div class="user-name">${user.name}</div>
-      <div class="user-status">Online</div>
-    `;
-    card.onclick = () => showUserCamera(user);
-    return card;
-  }
+  async function joinMeeting() {
+    const name = nameInput.value.trim();
+    if (!name) {
+      alert('Please enter your name');
+      return;
+    }
 
-  function updateUserGrid() {
-    userGrid.innerHTML = '';
-    users.forEach(user => {
-      userGrid.appendChild(createUserCard(user));
-    });
-    connectionCount.textContent = users.length;
-  }
-
-  async function addUser(name) {
-    const avatar = `https://api.dicebear.com/6.x/avataaars/svg?seed=${name}`;
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-    users.push({ name, avatar, stream });
-    updateUserGrid();
-  }
-
-  function removeUser(name) {
-    const index = users.findIndex(user => user.name === name);
-    if (index !== -1) {
-      const user = users[index];
-      if (user.stream) {
-        user.stream.getTracks().forEach(track => track.stop());
-      }
-      users.splice(index, 1);
-      updateUserGrid();
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      addParticipant(name, localStream);
+      setupLocalVideo(localStream);
+      nameInput.value = '';
+      document.querySelector('.waiting-message').style.display = 'none';
+    } catch (error) {
+      console.error('Error accessing media devices:', error);
+      alert('Failed to access camera and microphone. Please ensure you have given the necessary permissions.');
     }
   }
 
-  async function joinSession() {
-    const name = nameInput.value.trim();
-    if (name) {
+  function addParticipant(name, stream) {
+    const participant = { name, stream };
+    participants.push(participant);
+    updateParticipantsList();
+    addVideoElement(participant);
+  }
+
+  function updateParticipantsList() {
+    participantsList.innerHTML = '';
+    participants.forEach(participant => {
+      const participantDiv = document.createElement('div');
+      participantDiv.className = 'participant';
+      participantDiv.innerHTML = `
+        <div class="participant-avatar">${participant.name[0].toUpperCase()}</div>
+        <span class="participant-name">${participant.name}</span>
+      `;
+      participantsList.appendChild(participantDiv);
+    });
+  }
+
+  function addVideoElement(participant) {
+    const videoContainer = document.createElement('div');
+    videoContainer.className = 'video-container';
+    const video = document.createElement('video');
+    video.srcObject = participant.stream;
+    video.autoplay = true;
+    video.playsInline = true;
+    if (participant.stream === localStream) {
+      video.muted = true;
+    }
+    videoContainer.appendChild(video);
+    videoGrid.appendChild(videoContainer);
+  }
+
+  function setupLocalVideo(stream) {
+    const videoContainer = document.createElement('div');
+    videoContainer.className = 'video-container';
+    const video = document.createElement('video');
+    video.srcObject = stream;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.muted = true;
+    videoContainer.appendChild(video);
+    videoGrid.insertBefore(videoContainer, videoGrid.firstChild);
+  }
+
+  muteBtn.addEventListener('click', () => {
+    isAudioMuted = !isAudioMuted;
+    localStream.getAudioTracks()[0].enabled = !isAudioMuted;
+    muteBtn.textContent = isAudioMuted ? 'Unmute' : 'Mute';
+  });
+
+  videoBtn.addEventListener('click', () => {
+    isVideoStopped = !isVideoStopped;
+    localStream.getVideoTracks()[0].enabled = !isVideoStopped;
+    videoBtn.textContent = isVideoStopped ? 'Start Video' : 'Stop Video';
+  });
+
+  shareBtn.addEventListener('click', async () => {
+    if (!isScreenSharing) {
       try {
-        await addUser(name);
-        nameInput.value = '';
-        alert(`Welcome, ${name}! You've joined the session. Your camera is now active.`);
+        screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        const videoTrack = screenStream.getVideoTracks()[0];
+        const videoElement = document.querySelector('.video-container video');
+        videoElement.srcObject = new MediaStream([videoTrack]);
+        isScreenSharing = true;
+        shareBtn.textContent = 'Stop Sharing';
+        videoTrack.onended = stopScreenSharing;
       } catch (error) {
-        alert("Failed to access camera. Please make sure you have given permission to use the camera.");
-        console.error(error);
+        console.error('Error sharing screen:', error);
+        alert('Failed to share screen. Please ensure you have given the necessary permissions.');
       }
     } else {
-      alert("Please enter a valid name.");
+      stopScreenSharing();
+    }
+  });
+
+  function stopScreenSharing() {
+    if (screenStream) {
+      screenStream.getTracks().forEach(track => track.stop());
+      const videoElement = document.querySelector('.video-container video');
+      videoElement.srcObject = localStream;
+      isScreenSharing = false;
+      shareBtn.textContent = 'Share Screen';
     }
   }
 
-  function showUserCamera(user) {
-    modalUserName.textContent = `${user.name}'s Camera`;
-    userVideo.srcObject = user.stream;
-    modal.style.display = "block";
-  }
-
-  closeBtn.onclick = function() {
-    modal.style.display = "none";
-    userVideo.srcObject = null;
-  }
-
-  window.onclick = function(event) {
-    if (event.target == modal) {
-      modal.style.display = "none";
-      userVideo.srcObject = null;
+  leaveBtn.addEventListener('click', () => {
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
     }
-  }
-
-  // Simulating other users joining (for demonstration purposes)
-  function simulateOtherUsers() {
-    const names = ['John', 'Emma', 'Michael', 'Sophia', 'William'];
-    names.forEach(async (name) => {
-      if (!users.some(user => user.name === name)) {
-        await addUser(name);
-      }
-    });
-  }
-
-  // Call this function to simulate other users
-  simulateOtherUsers();
+    if (screenStream) {
+      screenStream.getTracks().forEach(track => track.stop());
+    }
+    videoGrid.innerHTML = '';
+    participantsList.innerHTML = '';
+    participants.length = 0;
+    alert('You have left the meeting');
+    document.querySelector('.waiting-message').style.display = 'block';
+  });
 </script>
 </body></html>
