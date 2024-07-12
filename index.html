@@ -34,6 +34,9 @@ video { width: 100%; height: 240px; background-color: #ddd; border-radius: 8px; 
 .option-btn { background-color: var(--secondary-color); color: white; border: none; padding: 10px 15px; border-radius: 20px; cursor: pointer; transition: background-color 0.3s, transform 0.3s; }
 .option-btn:hover { background-color: #e09600; transform: scale(1.05); }
 #participantCount { font-size: 16px; color: white; }
+#inviteForm { margin-top: 20px; }
+#inviteEmail { width: calc(100% - 120px); padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+#sendInvite { width: 100px; }
 </style></head><body>
 <div class="header">
   <h1>WebRTC AI Conference Hub</h1>
@@ -109,8 +112,18 @@ video { width: 100%; height: 240px; background-color: #ddd; border-radius: 8px; 
         <button class="option-btn" onclick="toggleAutoTranslation()">Toggle Auto-Translation</button>
         <button class="option-btn" onclick="analyzeGroupDynamics()">Analyze Group Dynamics</button>
         <button class="option-btn" onclick="generateActionItems()">Generate Action Items</button>
+        <button class="option-btn" onclick="startPrivateChat()">Start Private Chat</button>
       </div>
       <div id="transcriptContainer"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">Invite Participants</div>
+    <div class="card-content">
+      <form id="inviteForm">
+        <input type="email" id="inviteEmail" placeholder="Enter participant's email" required>
+        <button type="submit" class="btn" id="sendInvite">Send Invite</button>
+      </form>
     </div>
   </div>
 </div>
@@ -256,6 +269,12 @@ async function startScreenShare() {
         sender.replaceTrack(localStream.getVideoTracks()[0]);
       });
     };
+
+    const chatContainer = document.getElementById('chatContainer');
+    const screenShareMessage = document.createElement('p');
+    screenShareMessage.textContent = "System: You started sharing your screen.";
+    chatContainer.appendChild(screenShareMessage);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
   } catch (err) {
     console.error("Error starting AI-enhanced screen share:", err);
   }
@@ -306,7 +325,7 @@ function generateAIEnhancedResponse(message) {
 
 function requestAISummary() {
   console.log("Generating AI-powered meeting summary...");
-  const summaryElement =document.createElement('p');
+  const summaryElement = document.createElement('p');
   summaryElement.textContent = `AI Summary: The meeting focused on project timelines and resource allocation. Key decisions were made regarding the AI integration phase, with a consensus to accelerate the development of natural language processing components. Action items include updating the project roadmap and scheduling a follow-up meeting with the machine learning team. Current participant count: ${participantCount}`;
   document.getElementById('chatContainer').appendChild(summaryElement);
 }
@@ -331,14 +350,31 @@ function generateActionItems() {
   document.getElementById('chatContainer').appendChild(actionItemsElement);
 }
 
-// Simulating an AI-initiated interaction
-setTimeout(() => {
+function startPrivateChat() {
   const chatContainer = document.getElementById('chatContainer');
-  const aiMessage = document.createElement('p');
-  aiMessage.textContent = `AI Assistant: I've noticed a pattern in our discussions among ${participantCount} participants that suggests we might benefit from a brainstorming session on innovative AI applications in our industry. Would you like me to schedule this and prepare some initial talking points based on our conversation history and current market trends?`;
-  chatContainer.appendChild(aiMessage);
+  const privateChatMessage = document.createElement('p');
+  privateChatMessage.textContent = "System: You've initiated a private chat. Select a participant to start the conversation.";
+  chatContainer.appendChild(privateChatMessage);
+  
+  // Simulating participant selection
+  setTimeout(() => {
+    const participantSelection = document.createElement('p');
+    participantSelection.textContent = "System: Private chat started with Participant A. Your messages will now be visible only to them.";
+    chatContainer.appendChild(participantSelection);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }, 1500);
+}
+
+document.getElementById('inviteForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const email = document.getElementById('inviteEmail').value;
+  const chatContainer = document.getElementById('chatContainer');
+  const inviteMessage = document.createElement('p');
+  inviteMessage.textContent = `System: Invitation sent to ${email}. Waiting for them to join the conference.`;
+  chatContainer.appendChild(inviteMessage);
   chatContainer.scrollTop = chatContainer.scrollHeight;
-}, 15000);
+  document.getElementById('inviteEmail').value = '';
+});
 
 // Simulating participant join/leave events
 setInterval(() => {
@@ -353,6 +389,15 @@ setInterval(() => {
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 }, 30000);
+
+// Simulating an AI-initiated interaction
+setTimeout(() => {
+  const chatContainer = document.getElementById('chatContainer');
+  const aiMessage = document.createElement('p');
+  aiMessage.textContent = `AI Assistant: I've noticed a pattern in our discussions among ${participantCount} participants that suggests we might benefit from a brainstorming session on innovative AI applications in our industry. Would you like me to schedule this and prepare some initial talking points based on our conversation history and current market trends?`;
+  chatContainer.appendChild(aiMessage);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}, 15000);
 
 </script>
 </body></html>
