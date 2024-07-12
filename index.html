@@ -1,5 +1,5 @@
 
-<html><head><base href="https://visio.ai/%20i%20want%20reel%20person%20not%20fictif"><title>Visio - Real-Time User Connections (Real People)</title>
+<html><head><base href="https://visio.ai/"><title>Visio - Real-Time User Connections with Camera Access</title>
 <style>
   body {
     font-family: 'Roboto', sans-serif;
@@ -31,6 +31,7 @@
     padding: 1rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     transition: transform 0.3s ease;
+    cursor: pointer;
   }
   .user-card:hover {
     transform: translateY(-5px);
@@ -76,11 +77,47 @@
     border: none;
     cursor: pointer;
   }
+  #cameraModal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+  }
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+  }
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  #userVideo {
+    width: 100%;
+    max-width: 640px;
+    height: auto;
+  }
 </style>
 </head>
 <body>
 <header>
-  <h1>Visio - Real-Time User Connections (Real People)</h1>
+  <h1>Visio - Real-Time User Connections with Camera Access</h1>
 </header>
 <main>
   <div class="connection-info">
@@ -95,12 +132,26 @@
   </div>
 </main>
 
+<div id="cameraModal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2 id="modalUserName"></h2>
+    <video id="userVideo" autoplay playsinline></video>
+  </div>
+</div>
+
 <script>
   const users = [];
   const userGrid = document.getElementById('userGrid');
   const connectionCount = document.getElementById('connectionCount');
   const nameInput = document.getElementById('nameInput');
+  const modal = document.getElementById('cameraModal');
+  const modalUserName = document.getElementById('modalUserName');
+  const userVideo = document.getElementById('userVideo');
+  const closeBtn = document.getElementsByClassName('close')[0];
   
+  let localStream;
+
   function createUserCard(user) {
     const card = document.createElement('div');
     card.className = 'user-card';
@@ -109,6 +160,7 @@
       <div class="user-name">${user.name}</div>
       <div class="user-status">Online</div>
     `;
+    card.onclick = () => showUserCamera(user);
     return card;
   }
 
@@ -120,52 +172,70 @@
     connectionCount.textContent = users.length;
   }
 
-  function addUser(name) {
+  async function addUser(name) {
     const avatar = `https://api.dicebear.com/6.x/avataaars/svg?seed=${name}`;
-    users.push({ name, avatar });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    users.push({ name, avatar, stream });
     updateUserGrid();
   }
 
   function removeUser(name) {
     const index = users.findIndex(user => user.name === name);
     if (index !== -1) {
+      const user = users[index];
+      if (user.stream) {
+        user.stream.getTracks().forEach(track => track.stop());
+      }
       users.splice(index, 1);
       updateUserGrid();
     }
   }
 
-  function joinSession() {
+  async function joinSession() {
     const name = nameInput.value.trim();
     if (name) {
-      addUser(name);
-      nameInput.value = '';
-      alert(`Welcome, ${name}! You've joined the session.`);
+      try {
+        await addUser(name);
+        nameInput.value = '';
+        alert(`Welcome, ${name}! You've joined the session. Your camera is now active.`);
+      } catch (error) {
+        alert("Failed to access camera. Please make sure you have given permission to use the camera.");
+        console.error(error);
+      }
     } else {
       alert("Please enter a valid name.");
     }
   }
 
-  // Set up WebSocket connection (simulated for this example)
-  function setupWebSocket() {
-    console.log("Setting up WebSocket connection...");
-    
-    // Simulating incoming WebSocket messages
-    setInterval(() => {
-      const action = Math.random() > 0.5 ? 'join' : 'leave';
-      const names = ['John', 'Emma', 'Michael', 'Sophia', 'William', 'Olivia', 'James', 'Ava', 'Benjamin', 'Isabella'];
-      const randomName = names[Math.floor(Math.random() * names.length)];
-      
-      if (action === 'join' && !users.some(user => user.name === randomName)) {
-        addUser(randomName);
-        console.log(`${randomName} joined the session.`);
-      } else if (action === 'leave' && users.some(user => user.name === randomName)) {
-        removeUser(randomName);
-        console.log(`${randomName} left the session.`);
-      }
-    }, 5000);
+  function showUserCamera(user) {
+    modalUserName.textContent = `${user.name}'s Camera`;
+    userVideo.srcObject = user.stream;
+    modal.style.display = "block";
   }
 
-  // Initialize WebSocket connection
-  setupWebSocket();
+  closeBtn.onclick = function() {
+    modal.style.display = "none";
+    userVideo.srcObject = null;
+  }
+
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+      userVideo.srcObject = null;
+    }
+  }
+
+  // Simulating other users joining (for demonstration purposes)
+  function simulateOtherUsers() {
+    const names = ['John', 'Emma', 'Michael', 'Sophia', 'William'];
+    names.forEach(async (name) => {
+      if (!users.some(user => user.name === name)) {
+        await addUser(name);
+      }
+    });
+  }
+
+  // Call this function to simulate other users
+  simulateOtherUsers();
 </script>
 </body></html>
