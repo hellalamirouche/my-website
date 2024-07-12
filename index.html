@@ -38,6 +38,12 @@ video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; backgrou
 #inviteEmail { width: calc(100% - 120px); padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
 #sendInvite { width: 100px; }
 .participant-name { position: absolute; bottom: 50px; left: 10px; background-color: rgba(0,0,0,0.5); color: white; padding: 5px 10px; border-radius: 4px; }
+.new-participant { border: 3px solid var(--accent-color); animation: pulse 2s infinite; }
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(80, 227, 194, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(80, 227, 194, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(80, 227, 194, 0); }
+}
 </style></head><body>
 <div class="header">
   <h1>WebRTC AI Conference Hub</h1>
@@ -46,7 +52,7 @@ video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; backgrou
   <div class="card">
     <div class="card-header">
       <span>AI-Enhanced Conference Room</span>
-      <span id="participantCount">Participants: 5</span>
+      <span id="participantCount">Participants: 6</span>
     </div>
     <div class="card-content">
       <div id="videoContainer">
@@ -75,6 +81,10 @@ video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; backgrou
         <div class="videoWrapper">
           <video autoplay playsinline></video>
           <div class="participant-name">Dana</div>
+        </div>
+        <div class="videoWrapper new-participant">
+          <video autoplay playsinline></video>
+          <div class="participant-name">New Participant</div>
         </div>
       </div>
     </div>
@@ -114,7 +124,7 @@ let isAudioMuted = false;
 let isVideoOff = false;
 let isAIBackgroundOn = false;
 let isAutoTranslationOn = false;
-let participantCount = 5;
+let participantCount = 6;
 
 async function startAIConferenceHub() {
   try {
@@ -129,6 +139,7 @@ async function startAIConferenceHub() {
     setupAIEnhancedPeerConnections();
     initializeAIFeatures();
     updateParticipantCount(participantCount);
+    detectNewParticipant();
   } catch (err) {
     console.error("Error starting AI Conference Hub:", err);
   }
@@ -285,9 +296,9 @@ function sendAIEnhancedMessage() {
 }
 
 function generateSmartTranscript() {
-  const participants = ['You', 'Alice', 'Bob', 'Charlie', 'Dana'];
-  const topics = ["project timeline", "budget allocation", "team collaboration", "AI integration", "market analysis"];
-  const actions = ["discussed", "analyzed", "proposed", "reviewed", "scheduled"];
+  const participants = ['You', 'Alice', 'Bob', 'Charlie', 'Dana', 'New Participant'];
+  const topics = ["project timeline", "budget allocation", "team collaboration", "AI integration", "market analysis", "ethical considerations"];
+  const actions = ["discussed", "analyzed", "proposed", "reviewed", "scheduled", "questioned"];
   const participant = participants[Math.floor(Math.random() * participants.length)];
   const topic = topics[Math.floor(Math.random() * topics.length)];
   const action = actions[Math.floor(Math.random() * actions.length)];
@@ -296,10 +307,10 @@ function generateSmartTranscript() {
 
 function generateAIEnhancedResponse(message) {
   const responses = [
-    "Based on our discussion and current market trends, I recommend focusing on AI-driven customer experience optimization. This aligns with the project goals discussed earlier.",
-    "I've analyzed the data you've presented, and here's an optimized strategy: Implement a phased approach for the AI integration, starting with natural language processing to enhance our customer support channels.",
-    "Considering the project timeline and resources, the AI suggests prioritizing the development of our machine learning models for predictive analytics. This will provide the most immediate impact on our business objectives.",
-    "I've cross-referenced your input with our database, and here's a data-driven solution: Utilize a hybrid cloud architecture for our AI systems to balance performance and cost-effectiveness."
+    "Based on our discussion and current market trends, I recommend focusing on AI-driven customer experience optimization. This aligns with the project goals discussed earlier and the insights provided by our new participant.",
+    "I've analyzed the data you've presented, including the fresh perspective from our new team member. Here's an optimized strategy: Implement a phased approach for the AI integration, starting with natural language processing to enhance our customer support channels.",
+    "Considering the project timeline, resources, and the valuable input from our new participant, the AI suggests prioritizing the development of our machine learning models for predictive analytics. This will provide the most immediate impact on our business objectives.",
+    "I've cross-referenced your input with our database and the new ideas brought by our latest team member. Here's a data-driven solution: Utilize a hybrid cloud architecture for our AI systems to balance performance and cost-effectiveness while ensuring scalability."
   ];
   return responses[Math.floor(Math.random() * responses.length)];
 }
@@ -307,7 +318,7 @@ function generateAIEnhancedResponse(message) {
 function requestAISummary() {
   console.log("Generating AI-powered meeting summary...");
   const summaryElement = document.createElement('p');
-  summaryElement.textContent = `AI Summary: The meeting focused on project timelines and resource allocation for our AI integration initiative. Key decisions were made regarding the acceleration of natural language processing components. Action items include updating the project roadmap, scheduling a follow-up meeting with the machine learning team, and conducting a cost-benefit analysis for cloud infrastructure options. All ${participantCount} participants showed high engagement, particularly during the AI ethics discussion.`;
+  summaryElement.textContent = `AI Summary: The meeting focused on project timelines and resource allocation for our AI integration initiative, with valuable contributions from our new team member. Key decisions were made regarding the acceleration of natural language processing components and the incorporation of additional ethical considerations. Action items include updating the project roadmap, scheduling a follow-up meeting with the machine learning team, and conducting a cost-benefit analysis for cloud infrastructure options. All ${participantCount} participants showed high engagement, particularly during the AI ethics discussion introduced by our new colleague.`;
   document.getElementById('chatContainer').appendChild(summaryElement);
 }
 
@@ -324,7 +335,7 @@ function toggleAutoTranslation() {
 function analyzeGroupDynamics() {
   console.log("Analyzing group dynamics and participant engagement...");
   const analysisElement = document.createElement('p');
-  analysisElement.textContent = `AI Analysis: Group dynamics are positive with balanced participation among ${participantCount} participants. Engagement levels are high, particularly during discussions on AI integration and ethical considerations. Alice shows increased enthusiasm when discussing technical aspects, while Bob excels in strategic planning dialogues. Charlie has been actively contributing to the AI ethics conversation, and Dana has provided valuable insights on market trends. Overall, the team demonstrates strong collaborative skills and a shared vision for the project.`;
+  analysisElement.textContent = `AI Analysis: Group dynamics are positive with balanced participation among ${participantCount} participants, including our new team member who has seamlessly integrated into the discussion. Engagement levels are high, particularly during discussions on AI integration and ethical considerations. Alice shows increased enthusiasm when discussing technical aspects, while Bob excels in strategic planning dialogues. Charlie has been actively contributing to the AI ethics conversation, and Dana has provided valuable insights on market trends. Our new participant has brought fresh perspectives on potential AI applications in our industry. Overall, the team demonstrates strong collaborative skills and a shared vision for the project.`;
   document.getElementById('chatContainer').appendChild(analysisElement);
 }
 
@@ -337,9 +348,10 @@ function generateActionItems() {
 3. Research potential AI ethics considerations and draft initial guidelines (Owner: Charlie)
 4. Develop prototype for user interface with AI integration (Owner: Dana)
 5. Prepare cost-benefit analysis for proposed AI solutions (Owner: You)
-6. Set up weekly cross-functional team meetings to ensure alignment
-7. Investigate partnerships with AI ethics advisory boards
-8. Create a knowledge sharing platform for the team to document AI-related learnings`;
+6. Investigate industry-specific AI applications (Owner: New Participant)
+7. Set up weekly cross-functional team meetings to ensure alignment
+8. Create a knowledge sharing platform for the team to document AI-related learnings
+9. Organize an AI ethics workshop for the entire team`;
   document.getElementById('chatContainer').appendChild(actionItemsElement);
 }
 
@@ -349,7 +361,7 @@ function startPrivateChat() {
   privateChatMessage.textContent = "System: You've initiated a private chat. Select a participant to start the conversation.";
   chatContainer.appendChild(privateChatMessage);
   
-  const participants = ['Alice', 'Bob', 'Charlie', 'Dana'];
+  const participants = ['Alice', 'Bob', 'Charlie', 'Dana', 'New Participant'];
   participants.forEach(participant => {
     const participantButton = document.createElement('button');
     participantButton.textContent = participant;
@@ -390,8 +402,55 @@ document.getElementById('inviteForm').addEventListener('submit', function(e) {
     chatContainer.appendChild(joinMessage);
     updateParticipantCount(participantCount + 1);
     chatContainer.scrollTop = chatContainer.scrollHeight;
+    addNewParticipantVideo(email);
   }, 3000);
 });
+
+function addNewParticipantVideo(participantName) {
+  const videoContainer = document.getElementById('videoContainer');
+  const videoWrapper = document.createElement('div');
+  videoWrapper.className = 'videoWrapper new-participant';
+  
+  const video = document.createElement('video');
+  video.autoplay = true;
+  video.playsinline = true;
+  
+  const participantNameDiv = document.createElement('div');
+  participantNameDiv.className = 'participant-name';
+  participantNameDiv.textContent = participantName;
+  
+  videoWrapper.appendChild(video);
+  videoWrapper.appendChild(participantNameDiv);
+  videoContainer.appendChild(videoWrapper);
+  
+  // Simulate video stream
+  video.srcObject = new MediaStream();
+  
+  // Remove 'new-participant' class after animation
+  setTimeout(() => {
+    videoWrapper.classList.remove('new-participant');
+  }, 5000);
+}
+
+function detectNewParticipant() {
+  const newParticipant = document.querySelector('.new-participant');
+  if (newParticipant) {
+    console.log("New participant detected!");
+    const chatContainer = document.getElementById('chatContainer');
+    const detectionMessage = document.createElement('p');
+    detectionMessage.textContent = "System: New participant detected. AI is analyzing their video stream for optimal integration.";
+    chatContainer.appendChild(detectionMessage);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    
+    // Simulate AI analysis of new participant
+    setTimeout(() => {
+      const analysisMessage = document.createElement('p');
+      analysisMessage.textContent = "AI Assistant: Analysis complete. New participant's video quality is optimal. Audio levels adjusted for balanced participation. Engagement tracking initiated.";
+      chatContainer.appendChild(analysisMessage);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }, 2000);
+  }
+}
 
 // Initialize the conference hub when the page loads
 window.onload = startAIConferenceHub;
