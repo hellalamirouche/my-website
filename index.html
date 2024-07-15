@@ -1,75 +1,78 @@
-
-<html><head><base href="https://virtual-smart-tv.com%20use%20https://webrtc.org/?hl=fr%20use%20la%20possibilit%C3%A9%20de%20e%20connecter%20a%20un%20autre%20utilisateur"><title>Virtual Smart TV - WebRTC P2P Edition</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #1a1a1a;
-    margin: 0;
-    padding: 20px;
-    color: #fff;
-  }
-  .tv-container {
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: #000;
-    border: 20px solid #333;
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  .screen {
-    width: 100%;
-    height: 450px;
-    position: relative;
-  }
-  #videoElement {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .controls {
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    background-color: #333;
-  }
-  .control-btn {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 5px;
-  }
-  #status {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 10px;
-    border-radius: 5px;
-  }
-  #connectionDetails {
-    margin-top: 20px;
-    background-color: #333;
-    padding: 20px;
-    border-radius: 10px;
-  }
-  textarea {
-    width: 100%;
-    height: 100px;
-    margin-bottom: 10px;
-    background-color: #1a1a1a;
-    color: #fff;
-    border: 1px solid #4CAF50;
-    padding: 10px;
-    border-radius: 5px;
-  }
-</style>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Virtual Smart TV - WebRTC P2P Edition</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1a1a1a;
+      margin: 0;
+      padding: 20px;
+      color: #fff;
+    }
+    .tv-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #000;
+      border: 20px solid #333;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .screen {
+      width: 100%;
+      height: 450px;
+      position: relative;
+    }
+    #videoElement {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .controls {
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      background-color: #333;
+    }
+    .control-btn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    #status {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+    }
+    #connectionDetails {
+      margin-top: 20px;
+      background-color: #333;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 10px;
+      background-color: #1a1a1a;
+      color: #fff;
+      border: 1px solid #4CAF50;
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
   <div class="tv-container">
@@ -151,7 +154,6 @@
     function setupPeerConnection() {
       peerConnection.onicecandidate = e => {
         if (e.candidate) {
-          console.log("New ICE candidate: ", JSON.stringify(peerConnection.localDescription));
           yourSdpTextarea.value = JSON.stringify(peerConnection.localDescription);
         }
       };
@@ -161,7 +163,7 @@
       };
 
       peerConnection.oniceconnectionstatechange = e => {
-        if(peerConnection.iceConnectionState === 'connected') {
+        if (peerConnection.iceConnectionState === 'connected') {
           statusElement.textContent = "Status: Connected to peer.";
         }
       }
@@ -178,4 +180,5 @@
       offerSdpTextarea.value = "";
     }
   </script>
-</body></html>
+</body>
+</html>
