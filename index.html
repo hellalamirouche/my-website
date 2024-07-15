@@ -24,10 +24,22 @@
       height: 450px;
       position: relative;
     }
-    #videoElement {
+    #localVideo, #remoteVideo {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      position: absolute;
+    }
+    #remoteVideo {
+      z-index: 1;
+    }
+    #localVideo {
+      z-index: 2;
+      width: 30%;
+      height: 30%;
+      bottom: 10px;
+      right: 10px;
+      position: absolute;
     }
     .controls {
       padding: 20px;
@@ -77,7 +89,8 @@
 <body>
   <div class="tv-container">
     <div class="screen">
-      <video id="videoElement" autoplay playsinline></video>
+      <video id="remoteVideo" autoplay playsinline></video>
+      <video id="localVideo" autoplay muted playsinline></video>
       <div id="status">Status: Not Connected</div>
     </div>
     <div class="controls">
@@ -97,7 +110,8 @@
 
   <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
   <script>
-    const videoElement = document.getElementById('videoElement');
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
     const createBtn = document.getElementById('createBtn');
     const joinBtn = document.getElementById('joinBtn');
     const hangupBtn = document.getElementById('hangupBtn');
@@ -121,7 +135,7 @@
       navigator.mediaDevices.getUserMedia({video: true, audio: true})
         .then(stream => {
           stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
-          videoElement.srcObject = stream;
+          localVideo.srcObject = stream;
           return peerConnection.createOffer();
         })
         .then(offer => peerConnection.setLocalDescription(offer))
@@ -141,7 +155,12 @@
       peerConnection = new RTCPeerConnection(configuration);
       setupPeerConnection();
 
-      peerConnection.setRemoteDescription(new RTCSessionDescription(offerSdp))
+      navigator.mediaDevices.getUserMedia({video: true, audio: true})
+        .then(stream => {
+          stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+          localVideo.srcObject = stream;
+          return peerConnection.setRemoteDescription(new RTCSessionDescription(offerSdp));
+        })
         .then(() => peerConnection.createAnswer())
         .then(answer => peerConnection.setLocalDescription(answer))
         .then(() => {
@@ -159,14 +178,14 @@
       };
 
       peerConnection.ontrack = e => {
-        videoElement.srcObject = e.streams[0];
+        remoteVideo.srcObject = e.streams[0];
       };
 
       peerConnection.oniceconnectionstatechange = e => {
         if (peerConnection.iceConnectionState === 'connected') {
           statusElement.textContent = "Status: Connected to peer.";
         }
-      }
+      };
     }
 
     function hangup() {
@@ -174,7 +193,8 @@
         peerConnection.close();
         peerConnection = null;
       }
-      videoElement.srcObject = null;
+      localVideo.srcObject = null;
+      remoteVideo.srcObject = null;
       statusElement.textContent = "Status: Disconnected";
       yourSdpTextarea.value = "";
       offerSdpTextarea.value = "";
