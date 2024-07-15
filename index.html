@@ -84,6 +84,13 @@
       padding: 10px;
       border-radius: 5px;
     }
+    #connectionCount {
+      margin-top: 10px;
+      background-color: #333;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -107,6 +114,8 @@
     <h3>Your Connection Info:</h3>
     <textarea id="yourSdpTextarea" readonly></textarea>
   </div>
+  
+  <div id="connectionCount">Number of connections: 0</div>
 
   <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
   <script>
@@ -119,14 +128,21 @@
     const statusElement = document.getElementById('status');
     const offerSdpTextarea = document.getElementById('offerSdpTextarea');
     const yourSdpTextarea = document.getElementById('yourSdpTextarea');
+    const connectionCountElement = document.getElementById('connectionCount');
 
     let peerConnection;
+    let connectionCount = 0;
     const configuration = {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]};
 
     createBtn.addEventListener('click', createConnection);
     joinBtn.addEventListener('click', joinConnection);
     hangupBtn.addEventListener('click', hangup);
     connectBtn.addEventListener('click', connectWithOffer);
+
+    function updateConnectionCount(change) {
+      connectionCount += change;
+      connectionCountElement.textContent = `Number of connections: ${connectionCount}`;
+    }
 
     function createConnection() {
       peerConnection = new RTCPeerConnection(configuration);
@@ -142,6 +158,7 @@
         .then(() => {
           yourSdpTextarea.value = JSON.stringify(peerConnection.localDescription);
           statusElement.textContent = "Status: Offer created. Share your SDP.";
+          updateConnectionCount(1);
         })
         .catch(e => console.error(e));
     }
@@ -166,6 +183,7 @@
         .then(() => {
           yourSdpTextarea.value = JSON.stringify(peerConnection.localDescription);
           statusElement.textContent = "Status: Answer created. Share your SDP.";
+          updateConnectionCount(1);
         })
         .catch(e => console.error(e));
     }
@@ -184,6 +202,8 @@
       peerConnection.oniceconnectionstatechange = e => {
         if (peerConnection.iceConnectionState === 'connected') {
           statusElement.textContent = "Status: Connected to peer.";
+        } else if (peerConnection.iceConnectionState === 'disconnected') {
+          hangup();
         }
       };
     }
@@ -198,6 +218,7 @@
       statusElement.textContent = "Status: Disconnected";
       yourSdpTextarea.value = "";
       offerSdpTextarea.value = "";
+      updateConnectionCount(-1);
     }
   </script>
 </body>
