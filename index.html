@@ -1,352 +1,181 @@
 
-<html><head><base href="https://peer-chat.websim.ai/"><title>Advanced P2P Live Streaming Platform</title><style>
+<html><head><base href="https://virtual-smart-tv.com%20use%20https://webrtc.org/?hl=fr%20use%20la%20possibilit%C3%A9%20de%20e%20connecter%20a%20un%20autre%20utilisateur"><title>Virtual Smart TV - WebRTC P2P Edition</title>
+<style>
   body {
     font-family: Arial, sans-serif;
+    background-color: #1a1a1a;
     margin: 0;
     padding: 20px;
-    background-color: #f0f0f0;
+    color: #fff;
   }
-  .container {
-    max-width: 1200px;
+  .tv-container {
+    max-width: 800px;
     margin: 0 auto;
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background-color: #000;
+    border: 20px solid #333;
+    border-radius: 10px;
+    overflow: hidden;
   }
-  h1, h2 {
-    color: #333;
+  .screen {
+    width: 100%;
+    height: 450px;
+    position: relative;
   }
   #videoElement {
     width: 100%;
-    background-color: #ddd;
+    height: 100%;
+    object-fit: cover;
   }
   .controls {
-    margin-top: 20px;
+    padding: 20px;
     display: flex;
     justify-content: space-between;
+    background-color: #333;
   }
-  button {
-    padding: 10px 20px;
+  .control-btn {
     background-color: #4CAF50;
     color: white;
     border: none;
-    border-radius: 4px;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
     cursor: pointer;
+    border-radius: 5px;
   }
-  button:hover {
-    background-color: #45a049;
+  #status {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 5px;
   }
-  button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-  }
-  #statsPanel {
+  #connectionDetails {
     margin-top: 20px;
-    padding: 10px;
-    background-color: #f8f8f8;
-    border-radius: 4px;
+    background-color: #333;
+    padding: 20px;
+    border-radius: 10px;
   }
-  #chatBox {
-    height: 300px;
-    border: 1px solid #ddd;
-    overflow-y: scroll;
+  textarea {
+    width: 100%;
+    height: 100px;
+    margin-bottom: 10px;
+    background-color: #1a1a1a;
+    color: #fff;
+    border: 1px solid #4CAF50;
     padding: 10px;
-    margin-top: 20px;
-  }
-  #chatInput {
-    width: calc(100% - 110px);
-    padding: 10px;
-    margin-top: 10px;
-  }
-  #sendButton {
-    width: 100px;
-    margin-left: 10px;
+    border-radius: 5px;
   }
 </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Advanced P2P Live Streaming Platform</h1>
-    <video id="videoElement" autoplay></video>
+  <div class="tv-container">
+    <div class="screen">
+      <video id="videoElement" autoplay playsinline></video>
+      <div id="status">Status: Not Connected</div>
+    </div>
     <div class="controls">
-      <button id="startButton">Start Stream</button>
-      <button id="stopButton" disabled>Stop Stream</button>
-      <button id="screenShareButton" disabled>Share Screen</button>
-      <select id="qualitySelector" disabled>
-        <option value="high">High Quality</option>
-        <option value="medium">Medium Quality</option>
-        <option value="low">Low Quality</option>
-      </select>
+      <button class="control-btn" id="createBtn">Create Connection</button>
+      <button class="control-btn" id="joinBtn">Join Connection</button>
+      <button class="control-btn" id="hangupBtn">Hang Up</button>
     </div>
-    <div id="statsPanel">
-      <h2>Stream Statistics</h2>
-      <p>Peer Connections: <span id="peerCount">0</span></p>
-      <p>Bandwidth: <span id="bandwidth">0 kbps</span></p>
-      <p>Packet Loss: <span id="packetLoss">0%</span></p>
-      <p>Resolution: <span id="resolution">-</span></p>
-      <p>Frame Rate: <span id="frameRate">0 fps</span></p>
-    </div>
-    <h2>Live Chat</h2>
-    <div id="chatBox"></div>
-    <input type="text" id="chatInput" placeholder="Type your message...">
-    <button id="sendButton">Send</button>
   </div>
 
-  <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+  <div id="connectionDetails">
+    <h3>Connection Details</h3>
+    <textarea id="offerSdpTextarea" placeholder="Paste the offer SDP here to join a connection"></textarea>
+    <button class="control-btn" id="connectBtn">Connect</button>
+    <h3>Your Connection Info:</h3>
+    <textarea id="yourSdpTextarea" readonly></textarea>
+  </div>
+
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
   <script>
     const videoElement = document.getElementById('videoElement');
-    const startButton = document.getElementById('startButton');
-    const stopButton = document.getElementById('stopButton');
-    const screenShareButton = document.getElementById('screenShareButton');
-    const qualitySelector = document.getElementById('qualitySelector');
-    const chatBox = document.getElementById('chatBox');
-    const chatInput = document.getElementById('chatInput');
-    const sendButton = document.getElementById('sendButton');
+    const createBtn = document.getElementById('createBtn');
+    const joinBtn = document.getElementById('joinBtn');
+    const hangupBtn = document.getElementById('hangupBtn');
+    const connectBtn = document.getElementById('connectBtn');
+    const statusElement = document.getElementById('status');
+    const offerSdpTextarea = document.getElementById('offerSdpTextarea');
+    const yourSdpTextarea = document.getElementById('yourSdpTextarea');
 
-    const peerCountElement = document.getElementById('peerCount');
-    const bandwidthElement = document.getElementById('bandwidth');
-    const packetLossElement = document.getElementById('packetLoss');
-    const resolutionElement = document.getElementById('resolution');
-    const frameRateElement = document.getElementById('frameRate');
+    let peerConnection;
+    const configuration = {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]};
 
-    let peer;
-    let stream;
-    let connections = [];
-    let isStreamer = false;
-    let mediaRecorder;
-    let chunks = [];
-    let statsInterval;
+    createBtn.addEventListener('click', createConnection);
+    joinBtn.addEventListener('click', joinConnection);
+    hangupBtn.addEventListener('click', hangup);
+    connectBtn.addEventListener('click', connectWithOffer);
 
-    function initPeer() {
-      peer = new Peer({
-        config: {'iceServers': [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'turn:numb.viagenie.ca', credential: 'muazkh', username: 'webrtc@live.com' }
-        ]}
-      });
-      
-      peer.on('open', (id) => {
-        console.log('My peer ID is: ' + id);
-        checkExistingStream();
-      });
+    function createConnection() {
+      peerConnection = new RTCPeerConnection(configuration);
+      setupPeerConnection();
 
-      peer.on('connection', handleNewConnection);
-
-      peer.on('call', (call) => {
-        if (isStreamer) {
-          call.answer(stream);
-        } else {
-          call.answer();
-        }
-        setupMediaConnection(call);
-      });
+      navigator.mediaDevices.getUserMedia({video: true, audio: true})
+        .then(stream => {
+          stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+          videoElement.srcObject = stream;
+          return peerConnection.createOffer();
+        })
+        .then(offer => peerConnection.setLocalDescription(offer))
+        .then(() => {
+          yourSdpTextarea.value = JSON.stringify(peerConnection.localDescription);
+          statusElement.textContent = "Status: Offer created. Share your SDP.";
+        })
+        .catch(e => console.error(e));
     }
 
-    function handleNewConnection(conn) {
-      connections.push(conn);
-      updatePeerCount();
-      setupDataConnection(conn);
-
-      if (isStreamer) {
-        const call = peer.call(conn.peer, stream);
-        setupMediaConnection(call);
-      }
+    function joinConnection() {
+      statusElement.textContent = "Status: Ready to join. Paste offer SDP and click Connect.";
     }
 
-    function setupMediaConnection(call) {
-      call.on('stream', (remoteStream) => {
-        if (!isStreamer) {
-          videoElement.srcObject = remoteStream;
-          startStatsInterval(call.peerConnection);
-        }
-      });
+    function connectWithOffer() {
+      const offerSdp = JSON.parse(offerSdpTextarea.value);
+      peerConnection = new RTCPeerConnection(configuration);
+      setupPeerConnection();
+
+      peerConnection.setRemoteDescription(new RTCSessionDescription(offerSdp))
+        .then(() => peerConnection.createAnswer())
+        .then(answer => peerConnection.setLocalDescription(answer))
+        .then(() => {
+          yourSdpTextarea.value = JSON.stringify(peerConnection.localDescription);
+          statusElement.textContent = "Status: Answer created. Share your SDP.";
+        })
+        .catch(e => console.error(e));
     }
 
-    function setupDataConnection(conn) {
-      conn.on('data', handleIncomingData);
-      conn.on('close', () => {
-        connections = connections.filter(c => c !== conn);
-        updatePeerCount();
-      });
-    }
-
-    function handleIncomingData(data) {
-      switch(data.type) {
-        case 'chat':
-          addMessageToChat(conn.peer, data.message);
-          break;
-        case 'quality':
-          if (isStreamer) {
-            adjustStreamQuality(data.quality);
-          }
-          break;
-      }
-    }
-
-    function checkExistingStream() {
-      // In a real app, you'd check with a signaling server
-      // For this demo, we'll assume no existing stream
-      enableStreamerControls();
-    }
-
-    function enableStreamerControls() {
-      startButton.disabled = false;
-      qualitySelector.disabled = false;
-    }
-
-    async function startStream() {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ 
-          audio: true, 
-          video: { width: 1280, height: 720 } 
-        });
-        videoElement.srcObject = stream;
-        isStreamer = true;
-        startButton.disabled = true;
-        stopButton.disabled = false;
-        screenShareButton.disabled = false;
-        
-        setupMediaRecorder();
-        broadcastStream();
-        startStatsInterval();
-      } catch (err) {
-        console.error("Error accessing media devices:", err);
-      }
-    }
-
-    function setupMediaRecorder() {
-      mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9,opus' });
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          chunks.push(event.data);
-          broadcastChunk(event.data);
+    function setupPeerConnection() {
+      peerConnection.onicecandidate = e => {
+        if (e.candidate) {
+          console.log("New ICE candidate: ", JSON.stringify(peerConnection.localDescription));
+          yourSdpTextarea.value = JSON.stringify(peerConnection.localDescription);
         }
       };
-      mediaRecorder.start(1000); // Collect 1 second of data at a time
-    }
 
-    function broadcastStream() {
-      connections.forEach(conn => {
-        const call = peer.call(conn.peer, stream);
-        setupMediaConnection(call);
-      });
-    }
+      peerConnection.ontrack = e => {
+        videoElement.srcObject = e.streams[0];
+      };
 
-    function broadcastChunk(chunk) {
-      connections.forEach(conn => {
-        conn.send({ type: 'media', chunk: chunk });
-      });
-    }
-
-    function stopStream() {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        videoElement.srcObject = null;
-        isStreamer = false;
-        startButton.disabled = false;
-        stopButton.disabled = true;
-        screenShareButton.disabled = true;
-        qualitySelector.disabled = true;
-        
-        if (mediaRecorder) {
-          mediaRecorder.stop();
+      peerConnection.oniceconnectionstatechange = e => {
+        if(peerConnection.iceConnectionState === 'connected') {
+          statusElement.textContent = "Status: Connected to peer.";
         }
-        
-        connections.forEach(conn => conn.close());
-        connections = [];
-        updatePeerCount();
-        clearInterval(statsInterval);
       }
     }
 
-    async function shareScreen() {
-      try {
-        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-        videoElement.srcObject = screenStream;
-        
-        if (isStreamer) {
-          const videoTrack = screenStream.getVideoTracks()[0];
-          const sender = peer.getSenders().find(s => s.track.kind === 'video');
-          sender.replaceTrack(videoTrack);
-        }
-      } catch (err) {
-        console.error("Error sharing screen:", err);
+    function hangup() {
+      if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
       }
+      videoElement.srcObject = null;
+      statusElement.textContent = "Status: Disconnected";
+      yourSdpTextarea.value = "";
+      offerSdpTextarea.value = "";
     }
-
-    function sendChatMessage() {
-      const message = chatInput.value.trim();
-      if (message) {
-        broadcastData({ type: 'chat', message: message });
-        addMessageToChat('You', message);
-        chatInput.value = '';
-      }
-    }
-
-    function broadcastData(data) {
-      connections.forEach(conn => conn.send(data));
-    }
-
-    function addMessageToChat(sender, message) {
-      const messageElement = document.createElement('p');
-      messageElement.textContent = `${sender}: ${message}`;
-      chatBox.appendChild(messageElement);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function updatePeerCount() {
-      peerCountElement.textContent = connections.length;
-    }
-
-    function adjustStreamQuality(quality) {
-      // In a real implementation, you'd adjust video bitrate, resolution, etc.
-      console.log(`Adjusting stream quality to: ${quality}`);
-    }
-
-    function startStatsInterval(peerConnection) {
-      statsInterval = setInterval(() => {
-        if (peerConnection) {
-          peerConnection.getStats(null).then(stats => {
-            stats.forEach(report => {
-              if (report.type === 'inbound-rtp' && report.kind === 'video') {
-                const bytesNow = report.bytesReceived;
-                const packetsLost = report.packetsLost;
-                const packetsReceived = report.packetsReceived;
-
-                if (this.lastByteReceived) {
-                  const bitrate = 8 * (bytesNow - this.lastByteReceived) / 1000;
-                  bandwidthElement.textContent = `${bitrate.toFixed(2)} kbps`;
-                }
-
-                this.lastByteReceived = bytesNow;
-
-                const lossRate = packetsLost / (packetsLost + packetsReceived) * 100;
-                packetLossElement.textContent = `${lossRate.toFixed(2)}%`;
-              }
-              if (report.type === 'track' && report.kind === 'video') {
-                resolutionElement.textContent = `${report.frameWidth}x${report.frameHeight}`;
-                frameRateElement.textContent = `${report.framesPerSecond} fps`;
-              }
-            });
-          });
-        }
-      }, 1000);
-    }
-
-    startButton.addEventListener('click', startStream);
-    stopButton.addEventListener('click', stopStream);
-    screenShareButton.addEventListener('click', shareScreen);
-    sendButton.addEventListener('click', sendChatMessage);
-    qualitySelector.addEventListener('change', (e) => {
-      if (isStreamer) {
-        adjustStreamQuality(e.target.value);
-      } else {
-        broadcastData({ type: 'quality', quality: e.target.value });
-      }
-    });
-
-    // Initialize on page load
-    initPeer();
   </script>
 </body></html>
